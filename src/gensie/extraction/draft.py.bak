@@ -1,0 +1,171 @@
+"""
+DraftEngine — Generates a structured draft via two focused LLM calls.
+
+Phase A: Evidence extraction — the model finds literal textual evidence
+          for each field. No reasoning, no formatting.
+Phase B: Reasoning + Draft — given the evidence, the model reasons about
+          values, applies defaults, normalizes formats, and produces
+          <Thinking>…</Thinking><Draft>{…}</Draft>.
+
+IMPORTANT: Model responses in **both** phases are kept as **raw strings**.
+No JSON parsing is enforced at any point.  Downstream consumers
+(``decode_to_json``) handle interpretation.
+"""
+
+
+import json
+from logging import getLogger
+from typing import Any
+
+from .prompts import (
+    EVIDENCE_PROMPT,
+    REASONING_DRAFT_PROMPT,
+    build_field_descriptions,
+    parse_draft_response,
+)
+
+logger = getLogger("gensie")
+
+
+class DraftEngine:
+    """Generates evidence and a structured draft from text + schema metadata.
+
+    Usage::
+
+        draft_engine = DraftEngine(client, model)
+        evidence, thinking, draft = draft_engine.generate(field_metadata, schema, text)
+    """
+
+    def __init__(
+        self,
+        client: Any,
+        model: str,
+    ):
+        self._client = client
+        self._model = model
+
+    def generate(
+        self,
+        field_metadata: list[dict[str, Any]],
+        optimized_schema: dict[str, Any],
+        input_text: str,
+        instruction: str,
+        *,
+        max_evidence_tokens: int = 1024,
+        max_reasoning_tokens: int = 1536,
+    ) -> tuple[str, str | None, str]:
+        """Run the two-phase draft generation.
+
+        **No** return value is guaranteed to be valid JSON — everything is
+        kept as raw text.
+
+        Args:
+            field_metadata: List of field metadata dicts
+                (from SchemaOptimizer.field_metadata, serialised).
+            optimized_schema: Schema dict for constrained decoding
+                (from SchemaOptimizer.optimized_schema).
+            input_text: Raw input text to extract from.
+            instruction: The natural language task description
+                (e.g., "Analiza la descripción del software...").
+            max_evidence_tokens: Max tokens for evidence output.
+            max_reasoning_tokens: Max tokens for reasoning+draft output.
+
+        Returns:
+            Tuple of ``(evidence_raw, thinking, draft_raw)`` — all strings.
+        """
+        # ── Phase A: Evidence ───────────────────────────────────────────
+        evidence_raw = self._extract_evidence(
+            field_metadata, input_text, instruction, max_tokens=max_evidence_tokens,
+        )
+
+        # ── Phase B: Reasoning + Draft ──────────────────────────────────
+        thinking, draft_raw = self._reason_and_draft(
+            evidence_raw, optimized_schema, field_metadata, instruction,
+            max_tokens=max_reasoning_tokens,
+        )
+
+        return evidence_raw, thinking, draft_raw
+
+    # ── Phase A ─────────────────────────────────────────────────────────
+
+    def _extract_evidence(
+        self,
+        field_metadata: list[dict[str, Any]],
+        input_text: str,
+        instruction: str,
+        max_tokens: int = 1024,
+    ) -> str:
+        """Phase A: Ask the LLM to extract literal textual evidence.
+
+        Returns the **raw model response** — no JSON parsing attempted.
+        The prompt asks for JSON but we accept whatever the model returns.
+        """
+        field_descriptions = build_field_descriptions(field_metadata)
+        prompt = EVIDENCE_PROMPT.format(
+            instruction=instruction,
+            field_descriptions=field_descriptions,
+            input_text=input_text,
+        )
+
+        response = self._call_model(prompt, max_tokens=max_tokens)
+        return response
+
+    # ── Phase B ─────────────────────────────────────────────────────────
+
+    def _reason_and_draft(
+        self,
+        evidence_raw: str | dict[str, Any],
+        schema: dict[str, Any],
+        field_metadata: list[dict[str, Any]],
+        instruction: str,
+        max_tokens: int = 1536,
+    ) -> tuple[str | None, str]:
+        """Phase B: Given evidence, reason about values and produce draft.
+
+        The ``evidence_raw`` argument may be a ``dict`` (legacy callers) or
+        a **raw string** — both are handled transparently.
+
+        The draft is returned as a **raw string** without JSON parsing.
+        """
+        # Format evidence depending on type.
+        if isinstance(evidence_raw, dict):
+            evidence_str = json.dumps(evidence_raw, indent=2, ensure_ascii=False)
+        else:
+            evidence_str = str(evidence_raw)
+
+        schema_json = json.dumps(schema, indent=2, ensure_ascii=False)
+
+        prompt = REASONING_DRAFT_PROMPT.format(
+            instruction=instruction,
+            evidence_json=evidence_str,
+            schema_json=schema_json,
+        )
+
+        response = self._call_model(prompt, max_tokens=max_tokens)
+        thinking, draft_str = parse_draft_response(response)
+
+        draft_raw: str = draft_str or ""
+
+        if not draft_raw.strip():
+            logger.warning("[draft] Draft is empty (no <Draft> block found).")
+            # Use the full response as a best-effort draft
+            draft_raw = response
+
+        return thinking, draft_raw
+
+    # ── LLM call ────────────────────────────────────────────────────────
+
+    def _call_model(self, prompt: str, max_tokens: int = 512) -> str:
+        """Call the LLM via OpenAI-compatible API."""
+        try:
+            response = self._client.chat.completions.create(
+                model=self._model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0,
+                max_tokens=max_tokens,
+            )
+        except Exception as e:
+            logger.error(f"[draft] LLM call failed: {e}")
+            raise
+
+        return response.choices[0].message.content or ""

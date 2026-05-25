@@ -3,6 +3,7 @@ import json
 from typing import Any, Dict
 from openai import OpenAI
 from gensie.agent import GenSIEAgent, Participant, ParticipantInfo, PipelineInfo
+from gensie.pipelines import ExtractionAgent, HybridCoTAgent, AdaptivePipelineAgent
 from gensie.task import Task
 from gensie.usage import UsageTracker
 from dotenv import load_dotenv
@@ -78,27 +79,33 @@ class OfficialParticipant(Participant):
     def __init__(self):
         # Default pipeline using the reference BasicAgent
         self.pipelines = {
-            "baseline": BasicAgent(),
-            # "pipeline2": MyCustomAgent(arg1, arg2...),
-            # "pipeline3": AnotherAgent(...),
+            "extraction": ExtractionAgent(),
+            "hybrid_cot": HybridCoTAgent(),
+            "adaptive": AdaptivePipelineAgent(),
         }
 
     def get_info(self) -> ParticipantInfo:
         return ParticipantInfo(
-            team_name="GenSIE Baseline Team",
-            institution="Official",
+            team_name="SEsml",
+            institution="Universidad de la Habana",
             pipelines=[
                 PipelineInfo(
-                    name="baseline",
-                    description="Standard OpenAI agent using structured outputs.",
+                    name="extraction",
+                    description="SchemaOptimizer + DraftEngine (2-phase) + CD + POST validation.",
                 ),
-                # Add descriptions for your other pipelines here:
-                # PipelineInfo(name="pipeline2", description="My advanced RAG agent"),
+                PipelineInfo(
+                    name="hybrid_cot",
+                    description="SchemaOptimizer + single LLM call with visible CoT + direct JSON.",
+                ),
+                PipelineInfo(
+                    name="adaptive",
+                    description="SchemaAnalyzer + PromptAssembler + HybridCoT. Adaptive prompt via semantic search over data/dev.",
+                ),
             ],
         )
 
     def get_agent(self, pipeline_name: str) -> GenSIEAgent:
         if pipeline_name not in self.pipelines:
-            # Fallback to default if pipeline not found, or raise error
-            return self.pipelines["baseline"]
+            # Fallback to extraction if pipeline not found
+            return self.pipelines["extraction"]
         return self.pipelines[pipeline_name]

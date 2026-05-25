@@ -1,6 +1,4 @@
-from .task import Task
-from .agent import GenSIEAgent
-from .baseline import BasicAgent
+from .extraction import ExtractionAgent, HybridCoTAgent, AdaptivePipelineAgent
 
-__version__ = "0.1.0"
-__all__ = ["Task", "GenSIEAgent", "BasicAgent"]
+
+__all__ = ["ExtractionAgent", "HybridCoTAgent", "AdaptivePipelineAgent"]

@@ -1,0 +1,266 @@
+"""
+Prompt templates for the Extraction v2 pipeline.
+
+Two prompts (2 LLM calls) for draft generation:
+
+  Phase A — Evidence extraction:
+    Finds textual evidence for each field. No reasoning, no formatting.
+
+  Phase B — Reasoning + Draft:
+    Given the evidence, reasons about values and produces a structured
+    <Thinking>…</Thinking><Draft>{…}</Draft> output.
+"""
+
+# ── Phase A: Evidence Extraction ────────────────────────────────────────
+# Goal: extract evidence for each field. Now supports literal, descriptive,
+# aggregated, inferred, and absent evidence types.
+
+EVIDENCE_PROMPT = (
+    "=== TAREA ===\n"
+    "{instruction}\n"
+    "\n"
+    "=== CAMPOS A EXTRAER ===\n"
+    "Según la tarea anterior, extrae evidencia para cada campo del esquema:\n"
+    "{field_descriptions}\n"
+    "\n"
+    "=== TIPOS DE EVIDENCIA ===\n"
+    "Para cada campo, la evidencia puede ser de estos tipos:\n"
+    "\n"
+    "1. LITERAL — Una cita textual exacta del documento.\n"
+    "   Úsala cuando el valor aparezca escrito explícitamente.\n"
+    "\n"
+    "2. DESCRIPTIVA — El texto describe el concepto sin usar la palabra exacta.\n"
+    "   Ocurre con campos enum o booleanos: el texto no contiene la etiqueta\n"
+    "   del enum pero sí una descripción que permite mapearla.\n"
+    "   Ej: el texto dice \"carrera de coches solares\" → evidencia para category=SCIENCE.\n"
+    "\n"
+    "3. AGREGADA — La información está dispersa en múltiples fragmentos.\n"
+    "   Ocurre con arrays (personas, organizaciones, síntomas).\n"
+    "   Recolecta TODOS los fragmentos relevantes, aunque estén separados.\n"
+    "\n"
+    "4. INFERIDA — El valor requiere razonamiento sobre el texto.\n"
+    "   Ocurre con booleanos (is_chronic), puntuaciones (complexity_score),\n"
+    "   o cualquier campo que combine varias pistas textuales.\n"
+    "   Describe qué texto soporta la inferencia.\n"
+    "\n"
+    "5. AUSENTE — El campo no tiene soporte en el texto.\n"
+    "   Responde null explícitamente.\n"
+    "\n"
+    "=== TEXTO ===\n"
+    "{input_text}\n"
+    "\n"
+    "=== FORMATO DE RESPUESTA ===\n"
+    "Responde SOLO con un JSON donde cada clave es el nombre del campo\n"
+    "y el valor es la evidencia encontrada, o null si no hay.\n"
+    "Para evidencia literal o descriptiva: el fragmento de texto relevante.\n"
+    "Para evidencia agregada: una lista de fragmentos.\n"
+    "Para evidencia inferida: el fragmento que soporta la inferencia.\n"
+    "Ejemplo:\n"
+    '{{\n'
+    '  "contract_title": "CONTRATO DE PRESTACIÓN DE SERVICIOS...",\n'
+    '  "contract_type": "PRESTACIÓN DE SERVICIOS",\n'
+    '  "effective_date": "14 de abril de 2026",\n'
+    '  "monetary_amount": null\n'
+    '}}\n'
+)
+
+
+# ── Phase B: Reasoning + Draft ─────────────────────────────────────────
+# Goal: given evidence, reason about values, apply defaults, format correctly,
+# and produce <Thinking> + <Draft>.
+
+REASONING_DRAFT_PROMPT = (
+    "=== TAREA ===\n"
+    "{instruction}\n"
+    "\n"
+    "Basándote en la tarea anterior y la evidencia extraída, determina el\n"
+    "valor correcto para cada campo del esquema. Luego genera el JSON final.\n"
+    "\n"
+    "=== EVIDENCIA EXTRAÍDA ===\n"
+    "{evidence_json}\n"
+    "\n"
+    "=== ESQUEMA OBJETIVO ===\n"
+    "{schema_json}\n"
+    "\n"
+    "=== PASOS DE RAZONAMIENTO ===\n"
+    "\n"
+    "Paso 1 — Clasificar el modo de cada campo\n"
+    "Para cada campo del esquema, identifica su modo de extracción según\n"
+    "el tipo de dato y la evidencia disponible:\n"
+    "• LITERAL: el valor está textualmente en la evidencia → copiarlo exactamente.\n"
+    "• NORMALIZADO: el valor requiere cambio de formato (fechas, números).\n"
+    "• MAPEADO: hay que elegir un valor de un enum desde una descripción.\n"
+    "• INFERIDO: el valor se deduce de pistas textuales (booleanos, puntuaciones).\n"
+    "• DISPERSO: hay que agregar múltiples fragmentos en un array.\n"
+    "• AUSENTE: no hay evidencia → null / [] / false según el tipo.\n"
+    "\n"
+    "Paso 2 — Aplicar la jerarquía de decisión\n"
+    "1. Evidencia literal clara → usar directamente.\n"
+    "2. Evidencia descriptiva → mapear al valor del esquema (enums, booleanos).\n"
+    "3. Evidencia ambigua → razonar en <Thinking> y documentar la decisión.\n"
+    "4. Sin evidencia → null (da igual si el campo es required u opcional; si no está en el texto, es null).\n"
+    "   Para arrays: []; para booleanos sin mención: false.\n"
+    "\n"
+    "Paso 3 — Mapeo semántico de enums\n"
+    "Para campos de tipo enum:\n"
+    "• Buscar coincidencia exacta entre el texto y las etiquetas del enum.\n"
+    "• Si no hay coincidencia exacta, buscar sinónimos o paráfrasis en el texto.\n"
+    "• Si el texto describe un concepto que corresponde inequívocamente a un\n"
+    "  valor del enum, usar ese valor (aunque no aparezca la palabra exacta).\n"
+    "• Si no hay relación semántica clara → null.\n"
+    "\n"
+    "Paso 4 — Inferencia de booleanos\n"
+    "Para campos booleanos:\n"
+    "• true SOLO si el texto afirma explícitamente la condición.\n"
+    "  Ej: \"es una enfermedad crónica\" → is_chronic = true.\n"
+    "• false si el texto niega explícitamente la condición O no la menciona.\n"
+    "• null si la información es ambigua o la condición no aplica al caso.\n"
+    "\n"
+    "Paso 5 — Construcción de arrays desde evidencias dispersas\n"
+    "Para campos de tipo array:\n"
+    "• Revisar TODA la evidencia disponible (puede estar en múltiples fragmentos).\n"
+    "• Extraer cada ítem individualmente como string.\n"
+    "• Eliminar duplicados (misma entidad mencionada varias veces).\n"
+    "• Si no hay ítems → [] (nunca null para arrays).\n"
+    "\n"
+    "Paso 6 — Objetos anidados\n"
+    "Para campos que son objetos con sub-campos:\n"
+    "• Cada sub-campo sigue sus propias reglas según su tipo.\n"
+    "• Los sub-campos requeridos deben tener valor (no null).\n"
+    "• Los sub-campos opcionales pueden ser null si no hay evidencia.\n"
+    "\n"
+    "Paso 7 — Verificación de consistencia\n"
+    "Antes de generar el <Draft> final, verifica:\n"
+    "• ¿Los campos requeridos tienen valor (no null, no vacío)?\n"
+    "• ¿Los valores de tipo enum coinciden EXACTAMENTE (case-sensitive)?\n"
+    "• ¿Las fechas están en formato YYYY-MM-DD?\n"
+    "• ¿Los números usan punto decimal (no coma) y sin separadores de miles?\n"
+    "• ¿Los booleanos son true o false (sin comillas)?\n"
+    "• ¿Hay valores que parecen inventados sin respaldo en la evidencia?\n"
+    "\n"
+    "=== FORMATO DE RESPUESTA ===\n"
+    "<Thinking>\n"
+    "Paso 1: clasificación de campos...\n"
+    "Campo X: razonamiento sobre la decisión...\n"
+    "...</Thinking>\n"
+    "<Draft>\n"
+    '{{"campo1": "valor1", "campo2": null, ...}}\n'
+    "</Draft>\n"
+)
+
+
+# ── Draft Verification ─────────────────────────────────────────────────
+
+DRAFT_VERIFIER_PROMPT = (
+    "=== TAREA ===\n"
+    "Eres un verificador de borradores de extracción.\n"
+    "Tu tarea es revisar si el borrador JSON es correcto según la evidencia\n"
+    "y el esquema proporcionados.\n"
+    "\n"
+    "=== ESQUEMA ===\n"
+    "{schema_json}\n"
+    "\n"
+    "=== EVIDENCIA ORIGINAL ===\n"
+    "{evidence_json}\n"
+    "\n"
+    "=== RAZONAMIENTO ===\n"
+    "{thinking}\n"
+    "\n"
+    "=== BORRADOR ===\n"
+    "{draft_json}\n"
+    "\n"
+    "=== TEXTO ORIGINAL ===\n"
+    "{input_text}\n"
+    "\n"
+    "Verifica:\n"
+    "1. ¿Cada valor no-null en el borrador está justificado por la evidencia?\n"
+    "2. ¿Los campos requeridos tienen valor (no null)?\n"
+    "3. ¿Los enums son válidos según el esquema?\n"
+    "4. ¿Hay valores que parecen inventados (no están en el texto)?\n"
+    "5. ¿Las fechas están en formato YYYY-MM-DD?\n"
+    "\n"
+    "Si encuentras errores, lista cada uno especificando el campo y el problema.\n"
+    "Si todo está correcto, responde SOLO \"OK\".\n"
+)
+
+
+# ── Constrained Decoding (Draft-as-Context) ────────────────────────────
+
+CD_DRAFT_CONTEXT = (
+    "=== TAREA ===\n"
+    "Eres un traductor. Tu única función es copiar los valores del borrador\n"
+    "dentro de la estructura del esquema JSON.\n"
+    "\n"
+    "No verificas, no infieres, no re-extraes. Solo traduces.\n"
+    "\n"
+    "=== BORRADOR ===\n"
+    "{draft_json}\n"
+    "\n"
+    "=== INSTRUCCIONES ===\n"
+    "1. Copia cada valor del borrador a su campo correspondiente en el esquema.\n"
+    "2. Si un valor necesita ajuste de formato para encajar en el esquema:\n"
+    "   - Fechas → YYYY-MM-DD\n"
+    "   - Enums → case-sensitive exacto\n"
+    "   - Números → punto decimal, sin separadores\n"
+    "   - Booleanos → true/false\n"
+    "3. Si un campo del esquema no está en el borrador → null (o [] si es array).\n"
+    "4. Si un campo del borrador no está en el esquema → ignóralo.\n"
+    "5. No añadas nada que no esté en el borrador. No infieras valores faltantes.\n"
+)
+
+
+# ── Helpers ────────────────────────────────────────────────────────────
+
+def build_field_descriptions(
+    fields: list[dict],
+    indent: int = 0,
+) -> str:
+    """Build a formatted field description string from field metadata."""
+    prefix = "  " * indent
+    lines: list[str] = []
+    for f in fields:
+        name = f["path"] if isinstance(f, dict) and "path" in f else f.get("name", str(f))
+        desc = f.get("description", name) if isinstance(f, dict) else name
+        ftype = f.get("field_type", "string") if isinstance(f, dict) else "string"
+        is_opt = f.get("is_optional", False) if isinstance(f, dict) else False
+
+        type_info = ftype
+        if ftype == "enum" and f.get("enum_values"):
+            type_info = f"enum: {', '.join(str(v) for v in f['enum_values'])}"
+        if ftype == "array" and f.get("item_type"):
+            type_info = f"array of {f['item_type']}"
+
+        opt_suffix = " (opcional)" if is_opt else ""
+        lines.append(f"{prefix}- {name}: {desc} ({type_info}){opt_suffix}")
+
+    return "\n".join(lines)
+
+
+def parse_draft_response(response: str) -> tuple[str | None, str | None]:
+    """Parse <Thinking>...</Thinking><Draft>...</Draft> from a model response.
+
+    Returns:
+        Tuple of (thinking_text, draft_json_string), or (None, None) if parsing fails.
+    """
+    thinking: str | None = None
+    draft: str | None = None
+
+    # Extract <Thinking>
+    t_start = response.find("<Thinking>")
+    t_end = response.find("</Thinking>")
+    if t_start != -1 and t_end != -1:
+        thinking = response[t_start + len("<Thinking>"):t_end].strip()
+
+    # Extract <Draft>
+    d_start = response.find("<Draft>")
+    d_end = response.find("</Draft>")
+    if d_start != -1 and d_end != -1:
+        draft = response[d_start + len("<Draft>"):d_end].strip()
+    else:
+        # Fallback: try to find JSON object directly
+        brace_start = response.find("{")
+        brace_end = response.rfind("}")
+        if brace_start != -1 and brace_end != -1:
+            draft = response[brace_start:brace_end + 1]
+
+    return thinking, draft
