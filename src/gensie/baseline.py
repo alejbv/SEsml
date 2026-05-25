@@ -3,7 +3,7 @@ import json
 from typing import Any, Dict
 from openai import OpenAI
 from gensie.agent import GenSIEAgent, Participant, ParticipantInfo, PipelineInfo
-from gensie.pipelines import ExtractionAgent, HybridCoTAgent, AdaptivePipelineAgent
+from gensie.extraction import ExtractionAgent, HybridCoTAgent, AdaptivePipelineAgent
 from gensie.task import Task
 from gensie.usage import UsageTracker
 from dotenv import load_dotenv
