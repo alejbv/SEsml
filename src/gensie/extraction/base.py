@@ -38,7 +38,7 @@ class ExtractionAgent(GenSIEAgent):
         self.pydantic_model_class = pydantic_model_class
         self.client = OpenAI(
             base_url=os.getenv("OPENAI_BASE_URL"),
-            api_key=os.getenv("OPENAI_API_KEY", "sk-dummy"),
+            api_key=os.getenv("OPENAI_API_KEY") or "sk-dummy",
         )
 
     def run(self, task: Task, model: str) -> dict[str, Any]:

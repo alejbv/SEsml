@@ -36,9 +36,8 @@ logger = getLogger("gensie")
 
 # ── Default paths ───────────────────────────────────────
 _HERE = Path(__file__).resolve().parent
-_REPO = _HERE.parents[3]
-_DEFAULT_VECTORS = _REPO / ".knowledge" / "dev_vectors.json"
-_DEFAULT_ERROR_MAP = _REPO / ".knowledge" / "error_map.json"
+_DEFAULT_VECTORS = _HERE / "data" / "dev_vectors.json"
+_DEFAULT_ERROR_MAP = _HERE / "data" / "error_map.json"
 
 
 class AdaptivePipelineAgent(GenSIEAgent):
@@ -62,7 +61,7 @@ class AdaptivePipelineAgent(GenSIEAgent):
         self.pydantic_model_class = pydantic_model_class
         self.client = OpenAI(
             base_url=os.getenv("OPENAI_BASE_URL"),
-            api_key=os.getenv("OPENAI_API_KEY", "sk-dummy"),
+            api_key=os.getenv("OPENAI_API_KEY") or "sk-dummy",
         )
         self.analyzer = SchemaAnalyzer(
             vectors_path=vectors_path,

@@ -28,9 +28,8 @@ logger = getLogger("gensie")
 
 # ── Default path for precomputed vectors ──────────────
 _HERE = Path(__file__).resolve().parent
-_REPO = _HERE.parents[3]  # src/gensie/pipelines/extraction → repo root
-_DEFAULT_VECTORS_PATH = _REPO / ".knowledge" / "dev_vectors.json"
-_DEFAULT_ERROR_MAP_PATH = _REPO / ".knowledge" / "error_map.json"
+_DEFAULT_VECTORS_PATH = _HERE / "data" / "dev_vectors.json"
+_DEFAULT_ERROR_MAP_PATH = _HERE / "data" / "error_map.json"
 
 # ── Cosine similarity threshold for pattern errors ─────
 _PATTERN_THRESHOLD = 0.5

@@ -1,0 +1,89 @@
+{
+  "ContractProfile": {
+    "rules": [
+      "monetary_amount: null si no hay monto explícito, no asumas 0 ni infieras.",
+      "effective_date: solo si hay fecha explícita en el texto.",
+      "parties: lista de organizaciones, no personas físicas.",
+      "contract_type: mapea al enum exacto, no copies texto literal."
+    ]
+  },
+  "DiseaseProfile": {
+    "rules": [
+      "symptoms: cuenta TODOS los síntomas, verifica longitud del array.",
+      "diagnosis: string literal del diagnóstico, no parafrasees.",
+      "severity: solo si está explícitamente mencionada.",
+      "medications: lista completa, sin omitir elementos."
+    ]
+  },
+  "SoftwareEntity": {
+    "rules": [
+      "version: string exacta, sin modificar formato.",
+      "developer: nombre de la organización, no del individuo.",
+      "license: mapea al enum exacto (case-sensitive).",
+      "release_date: solo si hay fecha explícita."
+    ]
+  },
+  "LiteratureWork": {
+    "rules": [
+      "title: string EXACTO del texto, caracter por caracter.",
+      "author: nombre completo como aparece en el texto.",
+      "publication_year: solo si está explícito, no infieras.",
+      "genre: mapea al enum exacto del esquema."
+    ]
+  },
+  "ContractParty": {
+    "rules": [
+      "name: nombre exacto de la organización.",
+      "role: string descriptivo del texto, no del enum.",
+      "is_individual: solo true si el texto lo dice explícitamente."
+    ]
+  },
+  "LegalDocument": {
+    "rules": [
+      "document_type: mapea al enum exacto.",
+      "jurisdiction: solo si está explícita en el texto.",
+      "signing_date: fecha explícita en formato YYYY-MM-DD.",
+      "parties_involved: lista de todas las partes mencionadas."
+    ]
+  },
+  "MedicalRecord": {
+    "rules": [
+      "patient_name: string exacto del texto.",
+      "diagnosis_codes: array completo, sin omitir códigos.",
+      "treatments: lista exhaustiva de tratamientos.",
+      "admission_date: fecha explícita, no infieras."
+    ]
+  },
+  "ScientificArticle": {
+    "rules": [
+      "title: string exacto del texto original.",
+      "authors: lista completa en orden de mención.",
+      "doi: string exacto, verificar formato.",
+      "keywords: array completo de todas las palabras clave."
+    ]
+  },
+  "CulturalEvent": {
+    "rules": [
+      "event_name: string exacto del texto.",
+      "event_type: mapea al enum exacto.",
+      "start_date: fecha explícita, formato YYYY-MM-DD.",
+      "participants: lista de todos los participantes mencionados."
+    ]
+  },
+  "NewsArticle": {
+    "rules": [
+      "headline: string exacto, caracter por caracter.",
+      "source: string del texto, no infieras la fuente.",
+      "date_published: solo si hay fecha explícita.",
+      "category: mapea al enum exacto."
+    ]
+  },
+  "Recipe": {
+    "rules": [
+      "ingredients: array COMPLETO de ingredientes.",
+      "steps: array en el ORDEN exacto del texto.",
+      "cooking_time: solo si está explícito.",
+      "servings: número explícito, no infieras."
+    ]
+  }
+}

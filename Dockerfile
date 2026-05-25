@@ -7,20 +7,18 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 # Set the working directory
 WORKDIR /app
 
-# 1. Copy only the dependency files first
-COPY pyproject.toml uv.lock README.md ./
+# Copy dependency files first (for Docker layer caching)
+COPY pyproject.toml README.md ./
 
-# 2. Install external dependencies only
-# We use --no-install-project if we were using uv sync, 
-# but with uv pip we can just install the requirements.
-# To avoid building the project, we use uv pip install on the dependencies.
-RUN uv pip install --system -r pyproject.toml
+# Copy source code
+COPY src/ ./src/
 
-# 3. Copy the actual source code into a subfolder
-COPY . /app/gensie-lib
+# Install the project with all dependencies (system-wide, production only)
+# Note: uv.lock is optional — omitting it lets uv resolve at build time
+RUN uv pip install --system -e .
 
-# 4. Install the project in editable mode
-RUN uv pip install --system -e /app/gensie-lib
+# Pre-download fastembed model for offline inference (no internet at runtime)
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding('BAAI/bge-small-en-v1.5')"
 
 # Expose the FastAPI port
 EXPOSE 8000

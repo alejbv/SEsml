@@ -3,14 +3,11 @@ services:
     build: .
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app/gensie-lib
     env_file:
       - .env
     environment:
       - PARTICIPANT_PATH=${PARTICIPANT_PATH:-gensie.baseline.OfficialParticipant}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-dummy}
 
-    # Using reload mode for faster development
     command: ["serve", "--host", "0.0.0.0", "--port", "8000"]

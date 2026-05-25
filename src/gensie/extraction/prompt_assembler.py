@@ -86,6 +86,11 @@ COMPLEXITY_MODULES = {
         "\n\n[COMPLEJIDAD L9 — Null traps]\n"
         "Campos con valor null frecuente. Solo extrae valores EXPLÍCITAMENTE mencionados."
     ),
+    "L10": (
+        "\n\n[COMPLEJIDAD L10 — Razonamiento holístico]\n"
+        "Requiere entender el texto como un todo. Sintetiza información\n"
+        "de múltiples secciones para construir cada campo del esquema."
+    ),
 }
 
 # Default when confidence is low

@@ -25,12 +25,16 @@ console = Console()
 
 
 @app.command()
-def serve(host: str = "0.0.0.0", port: int = 8000):
+def serve(
+    host: str = "0.0.0.0",
+    port: int = 8000,
+    reload: bool = False,
+):
     """Starts the FastAPI server for the agent."""
     console.print(
         f"[bold green]Starting GenSIE Agent Server on {host}:{port}...[/bold green]"
     )
-    uvicorn.run("gensie.server:app", host=host, port=port, reload=True)
+    uvicorn.run("gensie.server:app", host=host, port=port, reload=reload)
 
 
 @app.command()
