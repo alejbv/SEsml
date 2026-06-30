@@ -86,20 +86,32 @@ class OfficialParticipant(Participant):
 
     def get_info(self) -> ParticipantInfo:
         return ParticipantInfo(
-            team_name="SEsml",
-            institution="Universidad de la Habana",
+            team_name="SEsml — Schema-guided Extraction with Small Language Models",
+            institution="Universidad de La Habana",
             pipelines=[
                 PipelineInfo(
                     name="extraction",
-                    description="SchemaOptimizer + DraftEngine (2-phase) + CD + POST validation.",
+                    description=(
+                        "SchemaOptimizer + DraftEngine (borrador campo:valor) + "
+                        "Constrained Decoding (2 fases). Prompt v3b con 3 reglas "
+                        "críticas para SLMs. Pipeline principal para evaluación."
+                    ),
                 ),
                 PipelineInfo(
                     name="hybrid_cot",
-                    description="SchemaOptimizer + single LLM call with visible CoT + direct JSON.",
+                    description=(
+                        "SchemaOptimizer + llamada única con CoT visible "
+                        "(<Thinking>) + JSON directo vía _extract_json. "
+                        "Alternativa ligera al pipeline de 2 fases."
+                    ),
                 ),
                 PipelineInfo(
                     name="adaptive",
-                    description="SchemaAnalyzer + PromptAssembler + HybridCoT. Adaptive prompt via semantic search over data/dev.",
+                    description=(
+                        "SchemaAnalyzer + PromptAssembler + llamada única. "
+                        "Prompt adaptativo mediante similitud semántica sobre "
+                        "vectores de tareas de desarrollo (data/dev_vectors.json)."
+                    ),
                 ),
             ],
         )

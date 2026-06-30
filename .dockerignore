@@ -2,4 +2,11 @@
 __pycache__
 *.pyc
 .git
-data/
+/data/
+results/
+tests/
+.knowledge/
+.playground/
+.opencode/
+docs/
+scripts/
