@@ -85,6 +85,32 @@ def test_ranking_warns_when_model_has_no_baseline():
     assert result["leaderboard"][0]["avg_gap_closed"] == pytest.approx(0.5)
 
 
+def test_ranking_prefers_canonical_baseline_slug(tmp_path):
+    """When multiple pipeline='baseline' reports exist for a model, the one whose
+    filename slug matches `baseline_slug` is the official baseline; others are
+    participant submissions. Regression test for the case where FranRodrigo named
+    their pipeline 'baseline' and silently displaced the official baseline."""
+    official = _report("GenSIE Baseline Team", "baseline", "m1", 0.6)
+    franrodrigo = _report("FranRodrigo", "baseline", "m1", 0.7)
+    submission = _report("Team B", "p1", "m1", 0.8)
+    (tmp_path / "baseline--baseline.json").write_text(json.dumps(official))
+    (tmp_path / "franrodrigo--baseline.json").write_text(json.dumps(franrodrigo))
+    (tmp_path / "teamb--p1.json").write_text(json.dumps(submission))
+
+    reports = load_reports(tmp_path)
+    result = compute_ranking(reports, baseline_pipeline="baseline", baseline_slug="baseline")
+
+    # Baseline is the official one (F1=0.6), NOT the highest-F1 collision (0.7).
+    assert result["baselines"] == {"m1": 0.6}
+    # FranRodrigo is treated as a participant submission.
+    teams = {row["team"]: row for row in result["leaderboard"]}
+    assert "FranRodrigo" in teams
+    # FranRodrigo gap_closed = (0.7 - 0.6) / (1 - 0.6) = 0.25
+    assert teams["FranRodrigo"]["avg_gap_closed"] == pytest.approx(0.25)
+    # The collision is surfaced as a warning.
+    assert any("franrodrigo" in w for w in result["warnings"])
+
+
 def test_load_reports_reads_and_filters(tmp_path):
     good = _report("Team A", "p1", "m1", 0.8)
     (tmp_path / "good.json").write_text(json.dumps(good), encoding="utf-8")
