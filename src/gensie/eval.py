@@ -148,6 +148,10 @@ class Evaluator:
             self.model = TextEmbedding(model_name=model_name)
         except ImportError:
             self.model = None
+        except Exception:
+            # Network failures (DNS, timeout), disk-full, etc. should not
+            # crash the evaluator — semantic similarity falls back to 0.0.
+            self.model = None
         self.alpha = 0.7  # Weight for semantic similarity
 
     def lexical_similarity(self, s1: str, s2: str) -> float:

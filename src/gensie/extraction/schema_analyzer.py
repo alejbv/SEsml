@@ -209,7 +209,12 @@ class SchemaAnalyzer:
                     "fastembed not installed. Run: uv sync --group dev"
                 ) from exc
             model_name = self._vectors_data.get("model", "BAAI/bge-small-en-v1.5")
-            self._model = TextEmbedding(model_name)
+            try:
+                self._model = TextEmbedding(model_name)
+            except Exception:
+                # Network failure (DNS, timeout), disk-full, etc.
+                # Return zero vectors as fallback.
+                return [[0.0] * 384 for _ in texts]
         return [emb.tolist() for emb in self._model.embed(texts)]
 
     # ── Similarity ────────────────────────────────────────

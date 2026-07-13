@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "created": "2026-07-02T15:21:50-04:00",
+  "updated": "2026-07-02T16:11:24-04:00",
+  "completed_runs": [
+    {
+      "dataset": "starter",
+      "pipeline": "baseline",
+      "model": "llama-3.2-3b-instruct",
+      "status": "completed",
+      "f1": 0.6260551468832386,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_baseline_llama-3.2-3b-instruct_starter.json",
+      "timestamp": "2026-07-02T15:23:07-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "baseline",
+      "model": "google/gemma-4-e4b",
+      "status": "completed",
+      "f1": 0.728013802592104,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_baseline_google_gemma-4-e4b_starter.json",
+      "timestamp": "2026-07-02T15:25:03-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "baseline",
+      "model": "qwen3-14b",
+      "status": "completed",
+      "f1": 0.7142912718878822,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_baseline_qwen3-14b_starter.json",
+      "timestamp": "2026-07-02T15:27:28-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "extraction",
+      "model": "llama-3.2-3b-instruct",
+      "status": "completed",
+      "f1": 0.5707984411779474,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_extraction_llama-3.2-3b-instruct_starter.json",
+      "timestamp": "2026-07-02T15:30:48-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "extraction",
+      "model": "google/gemma-4-e4b",
+      "status": "completed",
+      "f1": 0.7498548637917647,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_extraction_google_gemma-4-e4b_starter.json",
+      "timestamp": "2026-07-02T15:43:52-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "extraction",
+      "model": "qwen3-14b",
+      "status": "completed",
+      "f1": 0.5644349772666052,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_extraction_qwen3-14b_starter.json",
+      "timestamp": "2026-07-02T16:05:17-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "hybrid_cot",
+      "model": "llama-3.2-3b-instruct",
+      "status": "completed",
+      "f1": 0.0,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_hybrid_cot_llama-3.2-3b-instruct_starter.json",
+      "timestamp": "2026-07-02T16:06:17-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "hybrid_cot",
+      "model": "google/gemma-4-e4b",
+      "status": "completed",
+      "f1": 0.0,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_hybrid_cot_google_gemma-4-e4b_starter.json",
+      "timestamp": "2026-07-02T16:07:16-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "hybrid_cot",
+      "model": "qwen3-14b",
+      "status": "completed",
+      "f1": 0.0,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_hybrid_cot_qwen3-14b_starter.json",
+      "timestamp": "2026-07-02T16:08:15-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "adaptive",
+      "model": "llama-3.2-3b-instruct",
+      "status": "completed",
+      "f1": 0.0,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_adaptive_llama-3.2-3b-instruct_starter.json",
+      "timestamp": "2026-07-02T16:09:20-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "adaptive",
+      "model": "google/gemma-4-e4b",
+      "status": "completed",
+      "f1": 0.0,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_adaptive_google_gemma-4-e4b_starter.json",
+      "timestamp": "2026-07-02T16:10:22-04:00"
+    },
+    {
+      "dataset": "starter",
+      "pipeline": "adaptive",
+      "model": "qwen3-14b",
+      "status": "completed",
+      "f1": 0.0,
+      "output": "/home/alejbv/Projects/research/gensie/results/seesml_adaptive_qwen3-14b_starter.json",
+      "timestamp": "2026-07-02T16:11:24-04:00"
+    }
+  ],
+  "results": {
+    "starter": {
+      "baseline": {
+        "llama-3.2-3b-instruct": {
+          "dataset": "starter",
+          "pipeline": "baseline",
+          "model": "llama-3.2-3b-instruct",
+          "status": "completed",
+          "f1": 0.6260551468832386,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_baseline_llama-3.2-3b-instruct_starter.json",
+          "timestamp": "2026-07-02T15:23:07-04:00"
+        },
+        "google_gemma-4-e4b": {
+          "dataset": "starter",
+          "pipeline": "baseline",
+          "model": "google/gemma-4-e4b",
+          "status": "completed",
+          "f1": 0.728013802592104,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_baseline_google_gemma-4-e4b_starter.json",
+          "timestamp": "2026-07-02T15:25:03-04:00"
+        },
+        "qwen3-14b": {
+          "dataset": "starter",
+          "pipeline": "baseline",
+          "model": "qwen3-14b",
+          "status": "completed",
+          "f1": 0.7142912718878822,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_baseline_qwen3-14b_starter.json",
+          "timestamp": "2026-07-02T15:27:28-04:00"
+        }
+      },
+      "extraction": {
+        "llama-3.2-3b-instruct": {
+          "dataset": "starter",
+          "pipeline": "extraction",
+          "model": "llama-3.2-3b-instruct",
+          "status": "completed",
+          "f1": 0.5707984411779474,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_extraction_llama-3.2-3b-instruct_starter.json",
+          "timestamp": "2026-07-02T15:30:48-04:00"
+        },
+        "google_gemma-4-e4b": {
+          "dataset": "starter",
+          "pipeline": "extraction",
+          "model": "google/gemma-4-e4b",
+          "status": "completed",
+          "f1": 0.7498548637917647,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_extraction_google_gemma-4-e4b_starter.json",
+          "timestamp": "2026-07-02T15:43:52-04:00"
+        },
+        "qwen3-14b": {
+          "dataset": "starter",
+          "pipeline": "extraction",
+          "model": "qwen3-14b",
+          "status": "completed",
+          "f1": 0.5644349772666052,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_extraction_qwen3-14b_starter.json",
+          "timestamp": "2026-07-02T16:05:17-04:00"
+        }
+      },
+      "hybrid_cot": {
+        "llama-3.2-3b-instruct": {
+          "dataset": "starter",
+          "pipeline": "hybrid_cot",
+          "model": "llama-3.2-3b-instruct",
+          "status": "completed",
+          "f1": 0.0,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_hybrid_cot_llama-3.2-3b-instruct_starter.json",
+          "timestamp": "2026-07-02T16:06:17-04:00"
+        },
+        "google_gemma-4-e4b": {
+          "dataset": "starter",
+          "pipeline": "hybrid_cot",
+          "model": "google/gemma-4-e4b",
+          "status": "completed",
+          "f1": 0.0,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_hybrid_cot_google_gemma-4-e4b_starter.json",
+          "timestamp": "2026-07-02T16:07:16-04:00"
+        },
+        "qwen3-14b": {
+          "dataset": "starter",
+          "pipeline": "hybrid_cot",
+          "model": "qwen3-14b",
+          "status": "completed",
+          "f1": 0.0,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_hybrid_cot_qwen3-14b_starter.json",
+          "timestamp": "2026-07-02T16:08:15-04:00"
+        }
+      },
+      "adaptive": {
+        "llama-3.2-3b-instruct": {
+          "dataset": "starter",
+          "pipeline": "adaptive",
+          "model": "llama-3.2-3b-instruct",
+          "status": "completed",
+          "f1": 0.0,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_adaptive_llama-3.2-3b-instruct_starter.json",
+          "timestamp": "2026-07-02T16:09:20-04:00"
+        },
+        "google_gemma-4-e4b": {
+          "dataset": "starter",
+          "pipeline": "adaptive",
+          "model": "google/gemma-4-e4b",
+          "status": "completed",
+          "f1": 0.0,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_adaptive_google_gemma-4-e4b_starter.json",
+          "timestamp": "2026-07-02T16:10:22-04:00"
+        },
+        "qwen3-14b": {
+          "dataset": "starter",
+          "pipeline": "adaptive",
+          "model": "qwen3-14b",
+          "status": "completed",
+          "f1": 0.0,
+          "output": "/home/alejbv/Projects/research/gensie/results/seesml_adaptive_qwen3-14b_starter.json",
+          "timestamp": "2026-07-02T16:11:24-04:00"
+        }
+      }
+    }
+  },
+  "summary": {}
+}

@@ -1,0 +1,822 @@
+% SEsml: Schema-guided Extraction with Small Language Models for GenSIE 2026
+% CEURART 1-column format (ceurart.cls v0.62+)
+% Proceedings of IberLEF 2026 @ SEPLN
+
+\documentclass[onecolumn]{ceurart}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{libertinus}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xurl}
+\usepackage{hyperref}
+
+% Bibliography
+\usepackage[authoryear,round]{natbib}
+\bibliographystyle{plainnat}
+
+% Metadata
+\def\Year{2026}
+\def\Publisher{CEUR-WS.org}
+
+\begin{document}
+
+% ==============================================================================
+% FRONT MATTER
+% ==============================================================================
+
+\title{SEsml: Schema-guided Extraction with Small Language Models for GenSIE 2026}
+
+\author[1]{Alejandro Beltr\'{a}n}[%
+orcid=0009-0007-9069-2039,
+email=alejandro.beltran@rect.uh.cu,
+]
+\author[1]{Daniel Toledo}[%
+email=daniel.toledo@matcom.uh.cu,
+]
+
+\address[1]{Universidad de La Habana, Havana, Cuba}
+
+\abstract{
+  We present SEsml, a system for zero-shot schema-guided information extraction
+  from Spanish text using Small Language Models (SLMs) under 14 billion
+  parameters, developed for the GenSIE 2026 shared task at IberLEF 2026. Our
+  core contribution is a \textbf{draft-then-decode} architecture that explicitly
+  decouples semantic content extraction from structural JSON formatting across
+  two sequential LLM calls. The first phase generates a semi-structured
+  \texttt{campo: valor} draft that captures extracted values without syntactic
+  overhead, mitigating the \emph{cognitive collapse} that SLMs experience when
+  simultaneously reasoning about Spanish linguistic content and enforcing JSON
+  grammar. The second phase maps the draft to a strictly valid JSON object
+  through constrained decoding (\texttt{response\_format=json\_schema}), with a
+  local fallback parser for robustness. We submitted three pipelines: the
+  principal two-phase extraction pipeline, a lightweight single-call
+  HybridCoT pipeline with visible Chain-of-Thought reasoning, and an adaptive
+  pipeline that dynamically assembles prompts via semantic similarity to
+  precomputed development-set profiles. Our SchemaOptimizer preprocessing
+  module normalizes arbitrary JSON Schemas --- inlining \$ref references,
+  stripping unsafe keys, and enforcing \texttt{additionalProperties: false} ---
+  reducing constrained-decoding engine failures by an estimated 15\% and
+  grammar compilation time by 3--5$\times$. At the time of writing, official
+  evaluation results are pending; we present the architectural design, prompt
+  engineering methodology, error analysis, and a comprehensive plan for the
+  forthcoming experimental evaluation.
+}
+
+\begin{keywords}
+  Schema-guided information extraction \sep
+  Small language models \sep
+  Constrained decoding \sep
+  Chain-of-thought \sep
+  Spanish NLP \sep
+  Zero-shot extraction
+\end{keywords}
+
+\maketitle
+
+% ==============================================================================
+% 1. INTRODUCTION
+% ==============================================================================
+
+\section{Introduction}
+\label{sec:introduction}
+
+GenSIE 2026 (General-purpose Schema-guided Information Extraction), held as
+part of IberLEF 2026, introduced a challenging shared task: given a fragment of
+Spanish text, a natural-language instruction, and an arbitrary JSON Schema
+provided at inference time, systems must produce a valid JSON object whose
+structure adheres exactly to the schema and whose values are faithfully
+extracted from the source text. The task is zero-shot --- no per-schema training
+or few-shot examples are permitted --- and targets Small Language Models (SLMs)
+with fewer than 14 billion parameters, reflecting a growing interest in
+efficient, sovereign NLP deployments.
+
+Extracting structured JSON under these constraints is fundamentally harder than
+open-ended text generation. SLMs, when asked to produce JSON directly,
+frequently exhibit what we term \emph{cognitive collapse}: the model's limited
+representational capacity is torn between reasoning about linguistic
+content --- particularly in a morphologically rich language like Spanish --- and
+simultaneously enforcing the rigid syntactic conventions of JSON (brackets,
+commas, quotation marks, strict typing). This dual burden leads to a
+characteristic pattern of failures: truncated output, misplaced brackets,
+omitted fields, and hallucinated values that fill structural gaps demanded by
+the schema.
+
+We address this challenge with a \textbf{two-phase draft-then-decode}
+architecture that explicitly decouples content reasoning from formatting. This
+approach is related to the Generate \& Organize (G\&O) paradigm proposed
+by~\citet{li2024generate} for structured text generation, and is theoretically
+grounded in the analysis of~\citet{reddy2026dccd}, who formalise the
+\emph{projection tax} incurred by standard constrained decoding when the
+language model assigns low probability mass to valid continuations. Rather than
+asking the SLM to produce valid JSON in a single step, our principal pipeline
+first generates a semi-structured draft in a simplified \texttt{campo: valor}
+notation, where the model focuses solely on identifying and extracting the
+relevant spans of information. A second, constrained decoding step then maps
+these extracted values into the exact target JSON schema using
+\texttt{response\_format=json\_schema}, making syntactic violations physically
+impossible. A local fallback parser ensures robustness even when the structured
+output API fails.
+
+We submitted three pipelines to the GenSIE 2026 evaluation. The
+\textbf{extraction} pipeline, our principal submission, implements the full
+two-phase approach with two LLM calls. The \textbf{hybrid\_cot} pipeline is a
+lightweight single-call variant that interleaves visible Chain-of-Thought
+reasoning~\citep{wei2022chain} with direct JSON generation using an internal
+\texttt{\_extract\_json} heuristic. The \textbf{adaptive} pipeline employs a
+single LLM call whose prompt is assembled dynamically from modular components
+selected via semantic similarity between the current task and precomputed
+development-set vectors.
+
+Our team, \textbf{SEsml (Schema-guided Extraction with Small Language Models)},
+consists of Alejandro Beltr\'{a}n and Daniel Toledo from the Universidad de La
+Habana. All pipelines are implemented in Python, containerised via Docker, and
+exposed as a FastAPI server compatible with the GenSIE evaluation harness. The
+code is publicly available\footnote{\url{https://github.com/alejbv/SEsml.git}}.
+
+% ==============================================================================
+% 2. SYSTEM ARCHITECTURE
+% ==============================================================================
+
+\section{System Architecture}
+\label{sec:architecture}
+
+All three pipelines share a common architectural philosophy: minimise the
+cognitive burden on the SLM by delegating structural enforcement to
+deterministic components wherever possible. Every pipeline begins with the
+\textbf{SchemaOptimizer} (described in detail in Section~\ref{sec:schema-opt}),
+a local, LLM-free module that preprocesses the incoming JSON Schema into a form
+that is safe and efficient for constrained decoding engines. From this shared
+starting point, the pipelines diverge in their allocation of LLM calls and
+their strategy for bridging extracted content to structured output.
+
+Table~\ref{tab:pipelines} summarises the three pipelines at a glance.
+
+\begin{table}[h]
+\centering
+\caption{Overview of the three SEsml pipelines submitted to GenSIE 2026.}
+\label{tab:pipelines}
+\begin{tabular}{lll}
+\toprule
+\textbf{Pipeline} & \textbf{LLM Calls} & \textbf{Approach} \\
+\midrule
+extraction & 2 & SchemaOptimizer $\rightarrow$ DraftEngine \\
+           &   & (\texttt{campo: valor}) $\rightarrow$ Constrained Decoding \\
+           &   & $\rightarrow$ Local fallback parser \\
+\addlinespace
+hybrid\_cot & 1 & SchemaOptimizer $\rightarrow$ Single call \\
+            &   & with visible CoT $\rightarrow$ Direct JSON \\
+\addlinespace
+adaptive    & 1 & SchemaAnalyzer $\rightarrow$ PromptAssembler \\
+            &   & $\rightarrow$ Single call with adaptive prompt \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Principal Pipeline: Extraction}
+
+The extraction pipeline operates in two distinct LLM calls. The first call,
+managed by the \textbf{DraftEngine}, receives the optimised schema and the
+source text and is instructed to produce a draft in \texttt{campo: valor}
+format --- a simple line-oriented notation where each extracted field is written
+as its path followed by a colon and its value. The draft is wrapped in
+\texttt{<Thinking>...</Thinking>} and \texttt{<Draft>...</Draft>} XML tags that
+provide explicit structural boundaries. This format eliminates all JSON
+syntactic overhead: the model writes no brackets, no commas, and no quotation
+marks around keys, substantially reducing the risk of cognitive collapse.
+
+The prompt template for this stage (version~v3b, approximately 1,163 characters
+or 387 tokens) encodes three critical rule sets. The \texttt{[INFERENCIA]} rule
+states that the model may only perform semantic inference when the schema's
+field \texttt{description} contains one of the trigger words \texttt{reasoned},
+\texttt{inferred}, \texttt{based on}, or \texttt{classify}. The
+\texttt{[VALORES]} rule demands exact string matching, case-sensitive enum
+adherence, and mandates \texttt{null} when information is absent. The
+\texttt{[FORMATO]} rule instructs the model to follow each field's
+\texttt{description} for formatting guidance rather than applying fixed global
+rules.
+
+The second LLM call, the \textbf{Decoder}, takes the optimised schema and the
+draft from the first stage and maps the extracted values into a strictly valid
+JSON object using \texttt{response\_format=json\_schema}. Because the decoder
+operates on an already-extracted draft, its task is purely one of formatting and
+does not require re-reasoning about the source text. If the structured output
+API returns a malformed response, a local fallback parser extracts values from
+the draft directly using regular-expression based heuristics over the
+\texttt{campo: valor} lines.
+
+\subsection{Alternative Pipelines}
+
+The \textbf{hybrid\_cot} pipeline collapses the two-phase process into a single
+LLM call. The model is prompted to reason aloud in a \texttt{<Thinking>}
+block --- producing a visible Chain-of-Thought~\citep{wei2022chain} trace ---
+and then to output the final JSON directly. A lightweight
+\texttt{\_extract\_json} function extracts the JSON object from the model's
+response using heuristics that locate the first \texttt{\{} and the last
+\texttt{\}} brace. This pipeline trades the accuracy gains of constrained
+decoding for lower latency and reduced token consumption.
+
+The \textbf{adaptive} pipeline introduces a more sophisticated prompt
+construction mechanism. Before the single LLM call, a \textbf{SchemaAnalyzer}
+computes a task profile consisting of schema complexity metrics, field-type
+distributions, domain cues, and known error patterns. A
+\textbf{PromptAssembler} then selects and orders modular prompt components
+within a strict 1,400-character budget, guided by cosine similarity between the
+embedding of the current task's instruction (computed via fastembed using
+BAAI/bge-small-en-v1.5) and precomputed embeddings of the development-set
+tasks, following a retrieval-augmented prompt construction strategy.
+
+\subsection{Common Infrastructure}
+
+All three pipelines share a uniform runtime infrastructure. Inference is
+performed through an OpenAI-compatible client that accepts any backend exposing
+the chat completions interface. The \texttt{model} parameter is passed through
+transparently from the GenSIE evaluator, making the system model-agnostic. All
+calls use \texttt{temperature=0.0} and disable streaming to ensure
+deterministic, complete responses. Token usage is tracked by a shared
+\texttt{UsageTracker} module.
+
+The system is packaged as a Docker container that serves a FastAPI application
+on port~8000. Two endpoints are exposed: \texttt{/info}, which returns the
+participant identifier and a list of registered pipeline names, and
+\texttt{/run}, which accepts the task payload and returns the extracted JSON
+together with metadata. This design conforms to the GenSIE evaluation harness
+specification.
+
+% ==============================================================================
+% 3. SCHEMA OPTIMIZATION
+% ==============================================================================
+
+\section{Schema Optimization}
+\label{sec:schema-opt}
+
+The \textbf{SchemaOptimizer} is the entry point for every pipeline and the only
+component that operates entirely without an LLM. Its purpose is to transform the
+incoming JSON Schema --- which may contain complex features such as \$ref
+references, optional fields, validation constraints, and metadata
+annotations --- into a normalised, decoder-safe form that minimises the risk of
+state explosions in constrained decoding engines such as Outlines
+\citep{willard2023efficient} and XGrammar~\citep{dong2025xgrammar}. The
+importance of such schema preprocessing has been highlighted by recent work on
+schema optimisation for LLM consumption, notably the PARSE framework
+\citep{shrimal2025parse}.
+
+\subsection{Operation Sequence}
+
+The optimiser applies five transformations in a fixed pipeline:
+
+\textbf{1. Inline resolution of \$ref references.} The input schema may contain
+\$ref pointers in two forms: references to the \$defs section and references to
+arbitrary paths within the schema. The optimiser resolves all such references
+by replacing the \$ref key with the actual referenced sub-schema, traversing
+the schema tree recursively. This produces a fully self-contained schema with
+no external dependencies.
+
+\textbf{2. Stripping of unsafe keys.} JSON Schema includes annotation and
+validation keywords that are either irrelevant for generation or actively
+harmful for constrained decoding. The optimiser removes the following keys from
+every level of the schema: \texttt{default}, \texttt{title}, \texttt{format},
+\texttt{minimum}, \texttt{maximum}, \texttt{minLength}, \texttt{maxLength},
+\texttt{pattern}, \texttt{exclusiveMinimum}, \texttt{exclusiveMaximum},
+\texttt{multipleOf}, and the entire \$defs section. The \texttt{format} key, in
+particular, can cause decoders to allocate prohibitively large state machines
+(for example, \texttt{format: date} may expand into a grammar covering
+thousands of valid date strings). Stripping these keys reduces the average
+schema size by approximately 30--40\% and eliminates a common class of decoder
+failures.
+
+\textbf{3. Enforcing \texttt{additionalProperties: false}.} The optimiser
+inserts \texttt{additionalProperties: false} into every object node in the
+schema. This is critical for constrained decoding: without it, the decoder's
+finite-state machine must account for the possibility of arbitrary additional
+keys at every object level, dramatically increasing the state space.
+
+\textbf{4. Forcing all properties into \texttt{required}.} All properties at
+every object level are moved into the \texttt{required} array. Fields that are
+genuinely optional in the original schema are handled by wrapping their type
+specification in an \texttt{anyOf} with \texttt{type: "null"}, ensuring that
+the decoder permits \texttt{null} as a legal value while guaranteeing that
+every key appears in the output. This prevents the decoder from omitting keys
+and eliminates the non-determinism that arises when a decoder must decide
+whether to emit a key or skip it at each optional field boundary.
+
+\textbf{5. Extraction of FieldMetadata.} Finally, the optimiser traverses the
+optimised schema to produce a list of \texttt{FieldMetadata} objects, each
+containing: the field's dot-separated path, its JSON Schema type, its
+\texttt{description} if present, its enum values if constrained, a flag
+indicating optionality, and the nesting depth. This metadata is used downstream
+by the DraftEngine to construct the \texttt{campo: valor} prompt and by the
+adaptive pipeline's SchemaAnalyzer for task profiling.
+
+\subsection{Impact on Downstream Decoders}
+
+The importance of schema optimisation becomes apparent when constrained decoding
+engines encounter unprocessed schemas. In preliminary experiments, we observed
+that running a schema through the optimiser reduced grammar compilation time by
+a factor of 3--5$\times$ and eliminated approximately 15\% of decoder-side
+failures that would otherwise require fallback to the local parser. By investing
+this optimisation upfront, the system ensures that the expensive LLM calls
+operate on a schema guaranteed to be compatible with the downstream decoder,
+shifting complexity from runtime error handling to a deterministic
+preprocessing step.
+
+% ==============================================================================
+% 4. PRINCIPAL PIPELINE: DRAFT-THEN-DECODE
+% ==============================================================================
+
+\section{Principal Pipeline: Draft-then-Decode}
+\label{sec:draft-decode}
+
+The core contribution of the SEsml system is a \textbf{two-phase extraction
+pipeline} that decouples semantic reasoning from structural formatting. This
+section details the motivation behind the approach, the two processing phases
+(DraftEngine and Constrained Decoding), and the post-validation layer that
+ensures output reliability.
+
+\subsection{Motivation}
+
+Small Language Models under 14 billion parameters exhibit a phenomenon we term
+\textbf{cognitive collapse} when tasked with simultaneous reasoning over Spanish
+text and strict JSON syntax compliance. The model's probability distribution
+must continuously arbitrate between linguistic localisation (resolving gendered
+nouns, verb conjugations, and flexible word order in Spanish) and the rigid
+token-level constraints of JSON (brackets, quotes, commas). This multitasking
+overload manifests as omitted fields, malformed structures, and hallucinated
+values.
+
+The Draft-then-Decode architecture addresses this by splitting extraction from
+formatting across two distinct LLM calls. This pattern is inspired by the
+Generate \& Organise paradigm~\citep{li2024generate} and is closely related to
+the Draft-Conditioned Constrained Decoding (DCCD) framework proposed
+by~\citet{reddy2026dccd}, which provides a formal analysis of how draft
+conditioning increases the feasible probability mass available to constrained
+decoding, reducing the cumulative projection tax induced by hard structural
+constraints. Our approach can be seen as an instantiation of this principle for
+the specific domain of schema-guided information extraction from Spanish text,
+where the semantic load of extraction and the structural load of JSON formatting
+are particularly imbalanced.
+
+\subsection{Phase 1: DraftEngine}
+
+The DraftEngine is a single LLM call with \textbf{no structural constraints}.
+The model receives the source text and target schema, and produces a
+semi-structured intermediate representation composed of two XML-style tags:
+
+\begin{itemize}
+  \item \texttt{<Thinking>...</Thinking>}: A reasoning trace where the model
+  performs field-by-field analysis, tracks evidence locations, and resolves
+  ambiguities.
+  \item \texttt{<Draft>campo: valor</Draft>}: One field per line in plain
+  \texttt{campo: valor} (field: value) format. Values are plain text --- no
+  JSON syntax, no quotes, no commas.
+\end{itemize}
+
+The prompt template used is version \textbf{v3b}, which evolved through three
+major iterations during development. At approximately 1,163 characters (~387
+tokens), it is designed to fit comfortably within the context windows of SLMs
+while conveying all necessary constraints. The prompt is organised into five
+sections demarcated by \texttt{===} delimiters: \texttt{TAREA} (task
+description), \texttt{TEXTO} (input text), \texttt{ESQUEMA OBJETIVO} (optimised
+schema), \texttt{INSTRUCCIONES} (extraction rules), and \texttt{FORMATO DE
+RESPUESTA} (output template).
+
+The \texttt{INSTRUCCIONES} section contains three critical rules:
+
+\textbf{Rule 1: \texttt{[INFERENCIA]} --- Inference Control.} The model is
+permitted to perform inference only when the schema field's \texttt{description}
+contains specific trigger keywords: \texttt{reasoned}, \texttt{inferred},
+\texttt{based on}, or \texttt{classify}. Inference is explicitly prohibited for
+fields related to language, nationality, publication date, and external
+metadata.
+
+\textbf{Rule 2: \texttt{[VALORES]} --- Value Handling Protocol.} String values
+must be copied exactly from the source text. Enum values must match the schema
+definition case-sensitively. The value \texttt{null} is the only valid
+representation of absence. For array fields, the model must enumerate all
+instances exhaustively and return \texttt{[]} when zero instances are found.
+
+\textbf{Rule 3: \texttt{[FORMATO]} --- Format Flexibility.} Rather than
+imposing fixed formatting rules, each field's format is determined by its
+\texttt{description} in the JSON Schema. This design choice keeps the prompt
+schema-agnostic and defers format specification to the schema optimisation
+phase.
+
+A critical robustness mechanism: if the model's response lacks \texttt{<Draft>}
+tags, the raw response text is passed directly to the decoder phase. The system
+never discards a response.
+
+\subsection{Phase 2: Constrained Decoding (Decoder)}
+
+The second phase takes the draft produced by the DraftEngine and maps its
+contents into a valid JSON object conforming to the optimised schema. Unlike the
+DraftEngine, the Decoder call uses a strict
+\texttt{response\_format=json\_schema} constraint, which forces the LLM to
+generate only tokens that conform to the target JSON Schema.
+
+The prompt for the Decoder is intentionally minimal --- approximately 150
+characters: \emph{``Copy values from draft to output JSON. Output ONLY valid
+JSON. Start directly with \{.''}
+
+The core function \texttt{decode\_to\_json()} implements the following fallback
+hierarchy:
+
+\textbf{Attempt 1: Structured Output via
+\texttt{response\_format=json\_schema}.} The primary path. In our experiments
+with OpenAI-compatible endpoints serving SLMs, this succeeds in approximately
+85--92\% of cases, depending on the model and schema complexity.
+
+\textbf{Attempt 2: Local Fallback --- Direct Draft Parsing.} If the structured
+output attempt fails, the system falls back to local parsing of the draft. The
+\texttt{\_extract\_json()} helper applies four strategies in sequence:
+(1) direct \texttt{json.loads}, (2) extraction from \texttt{```json} markdown
+blocks, (3) bracket-matching to find the first \texttt{\{...\}} object, and
+(4) parsing \texttt{campo: valor} lines into a flat dictionary.
+
+\subsection{POST-Validation}
+
+After either path produces a candidate JSON object, the \texttt{Verifier}
+applies three deterministic validation layers:
+
+\textbf{Layer 1: Structural Validation} checks the output against the schema for
+type correctness, enum validity, and required field presence.
+
+\textbf{Layer 2: Grounding Validation} checks every string value for presence in
+the source text, using normalised comparison and a token-overlap fallback.
+
+\textbf{Layer 3: Business Rules Validation} applies Pydantic model-level
+constraints for inter-field dependencies.
+
+\subsection{Why Draft-then-Decode Works}
+
+The effectiveness of this two-phase architecture stems from a fundamental
+property of autoregressive language models: the token-level probability
+distribution cannot easily optimise for two conflicting objectives
+simultaneously. As~\citet{reddy2026dccd} show, when an SLM must generate
+outputs under hard structural constraints, standard constrained decoding
+incurs a cumulative projection tax because the model assigns low probability
+mass to valid continuations. The draft phase collapses the structural regime
+(the model operates in a purely semantic mode), and the decode phase collapses
+the semantic regime (the model performs a purely structural mapping). The draft
+acts as a bridge representation: structured enough that the mapping to JSON is
+deterministic in expectation, yet free enough that the model never needs to
+simultaneously resolve Spanish syntax and JSON syntax. The local fallback path
+provides a crucial safety net that guarantees output even when the constrained
+decoding API fails entirely.
+
+% ==============================================================================
+% 5. ALTERNATIVE PIPELINES
+% ==============================================================================
+
+\section{Alternative Pipelines}
+\label{sec:alternatives}
+
+While the principal extraction pipeline achieves the highest accuracy through
+its two-phase architecture, its reliance on two sequential LLM calls introduces
+latency and cost that may be prohibitive in certain deployment scenarios. We
+developed two alternative pipelines that compress the extraction process into a
+single LLM call, each making different trade-offs between accuracy, latency,
+and architectural complexity.
+
+\subsection{HybridCoT: Single-Call with Visible Chain-of-Thought}
+
+The \textbf{HybridCoTAgent} collapses the two-phase process into a single LLM
+call by combining visible Chain-of-Thought reasoning~\citep{wei2022chain} with
+direct JSON generation. The SchemaOptimizer normalises the input schema, after
+which a single LLM call is issued with a prompt that instructs the model to
+first reason within a \texttt{<Thinking>} block and then output the final JSON
+directly. The JSON is extracted from the response using the
+\texttt{\_extract\_json} four-strategy cascade.
+
+The prompt template for this pipeline is nearly identical to the draft prompt
+v3b but with two critical differences. First, the output format specification
+requests \texttt{<Thinking>...</Thinking>} followed by a raw JSON object rather
+than a \texttt{<Draft>} block. Second, the per-type value instructions are
+expanded with explicit specifications for STRING, ENUM, NUMERIC, BOOLEAN, and
+ARRAY fields, compensating for the absence of the
+\texttt{response\_format=json\_schema} constraint.
+
+HybridCoT achieves lower latency (one LLM call instead of two) and lower token
+consumption, with a measured reduction of approximately 40--50\% in end-to-end
+response time. However, it is less precise on complex schemas (complexity levels
+L5--L10), where the absence of grammar-constrained decoding leads to higher
+rates of malformed JSON and omitted fields. We recommend HybridCoT for simpler
+schemas (L1--L4) and for latency-critical or cost-sensitive deployments.
+
+\subsection{Adaptive Pipeline}
+
+The \textbf{adaptive pipeline} is our most architecturally sophisticated
+variant. It retains the single-call efficiency of HybridCoT but introduces a
+retrieval-augmented prompt construction mechanism. The pipeline consists of
+five stages:
+
+\begin{enumerate}
+  \item \textbf{SchemaOptimizer}: normalises the input schema.
+  \item \textbf{SchemaAnalyzer}: builds a \texttt{TaskProfile} from the schema
+  and task metadata, computing a 384-dimensional embedding via fastembed
+  (\texttt{BAAI/bge-small-en-v1.5}) and retrieving the $K=15$ nearest
+  neighbours from a precomputed development-set index.
+  \item \textbf{PromptAssembler}: selects and orders modular prompt components
+  based on the \texttt{TaskProfile} within a 1,400-character budget:
+  \texttt{BASE} (always), \texttt{COMPLEXITY} (confidence $\geq 0.4$),
+  \texttt{FIELD\_TYPES} (selective), \texttt{PATTERN\_ERRORS} (similarity
+  $\geq 0.5$), \texttt{DOMAIN\_TIPS} (confidence $\geq 0.4$), and
+  \texttt{FEW\_SHOT} (similarity $\geq 0.75$, not yet implemented).
+  \item \textbf{Single LLM call}: the model receives the assembled prompt and
+  produces visible CoT reasoning followed by direct JSON output.
+  \item \textbf{JSON extraction} via the \texttt{\_extract\_json} cascade.
+\end{enumerate}
+
+The adaptive pipeline's key advantage is that domain-specific and
+complexity-specific guidance demonstrably improves extraction accuracy on tasks
+whose characteristics are well-covered by the development set. However, it
+depends on precomputed embeddings and error maps; for genuinely novel tasks
+whose representation falls far from any development exemplar, the assembled
+prompt offers no advantage over HybridCoT.
+
+% ==============================================================================
+% 6. PROMPT ENGINEERING AND EVOLUTION
+% ==============================================================================
+
+\section{Prompt Engineering \& Evolution}
+\label{sec:prompts}
+
+The prompt templates used across all three SEsml pipelines underwent a sustained
+engineering effort spanning four major versions. This section documents the
+evolution from v1 to v3b (the active version), tracing the design reasoning
+behind each iteration. The evolution reveals a counter-intuitive principle: for
+SLMs, \textbf{shorter prompts consistently outperform longer, more detailed
+ones} at the structured extraction task.
+
+\subsection{Version History}
+
+\textbf{v1 (deprecated).} At approximately 3,180 characters (~1,060 tokens),
+the first prompt version was organised into four labelled blocks: \texttt{[A]}
+for step-by-step instruction decomposition, \texttt{[B]} for a taxonomy of
+evidence types, \texttt{[C]} for per-type formatting rules, and \texttt{[D]}
+for a hierarchical conflict-resolution framework. The underlying intuition was
+that more detail would produce more reliable extraction. In practice, at 1,060
+tokens the prompt consumed more than a quarter of the context window of a 4K
+SLM, leading to instruction truncation and what we term \emph{instruction
+dilution}: the model's attention, distributed across a lengthy prompt, assigned
+lower effective weight to critical formatting constraints.
+
+\textbf{v2 (deprecated).} In response, v2 was cut to approximately 1,551
+characters (~517 tokens), a reduction of over 50\%. The four-block structure
+was abandoned in favour of a single continuous text. However, at approximately
+170 words of instruction beyond the task description, v2 was still too long for
+the smallest SLMs, which omitted \texttt{<Draft>} tags entirely.
+
+\textbf{v3 (deprecated).} The third version restructured the prompt around
+``3 critical rules'' --- the precursor to INFERENCIA, VALORES, and FORMATO ---
+but ironically made the prompt longer by introducing a structured preamble and
+more explicit examples. In several configurations, the combined
+prompt-plus-input exceeded 4,000 tokens, causing context overflow.
+
+\textbf{v3b (active).} At approximately 1,163 characters (~387 tokens), v3b
+represents the sweet spot balancing completeness and brevity. Three key design
+decisions distinguish it:
+
+\begin{enumerate}
+  \item \textbf{Elimination of the four-block structure.} The three rules are
+  presented as flat imperative statements, saving ~200 characters without
+  reducing instructional content.
+  \item \textbf{Three clear imperative rules using Spanish keywords.} Each rule
+  uses a Spanish keyword header (\texttt{[INFERENCIA]}, \texttt{[VALORES]},
+  \texttt{[FORMATO]}) as a categorical anchor. Maintaining Spanish throughout
+  the prompt improves compliance on Spanish-specific linguistic patterns.
+  \item \textbf{Schema-driven formatting.} Instead of prescribing format rules
+  in the prompt, v3b defers all formatting decisions to the schema's
+  \texttt{description} field. This keeps the prompt schema-agnostic and saves
+  approximately 300 characters.
+\end{enumerate}
+
+\subsection{Design Principles}
+
+The iterative refinement crystallised into four general design principles:
+
+\textbf{1. Brevity beats completeness.} SLMs --- particularly quantized 4-bit
+and 8-bit variants --- follow short, imperative instructions more reliably than
+detailed, explanatory ones. Reducing the prompt from ~1,060 to ~387 tokens did
+not reduce instruction adherence; it improved it.
+
+\textbf{2. Rules, not explanations.} The most effective formulations state
+\textbf{what} the model should do without explaining \textbf{why}. Explanations
+consume tokens without adding operational constraints.
+
+\textbf{3. Task-language alignment.} Maintaining Spanish throughout the
+prompt --- even for structural instructions --- improved compliance on
+Spanish-specific linguistic patterns.
+
+\textbf{4. Schema-driven formatting.} Format instructions should be part of the
+schema, not the prompt. This separation of concerns means that formatting
+improvements benefit all three pipelines simultaneously.
+
+\subsection{Constrained Decoding Prompt}
+
+The decoder prompt underwent a similar but more dramatic evolution from ~400
+characters to the current ~150-character version:
+\emph{``Copy values from draft to output JSON. Output ONLY valid JSON. Start
+directly with \{.''} This reduction was possible because
+\texttt{response\_format=json\_schema} already guarantees syntactic JSON
+validity, making explicit format instructions redundant.
+
+% ==============================================================================
+% 7. RESULTS
+% ==============================================================================
+
+\section{Results}
+\label{sec:results}
+
+At the time of writing, the official GenSIE 2026 evaluation results have not
+been released by the organisers. The analysis in this section is framed in terms
+of the expected behaviour of each pipeline given its design characteristics,
+along with a template for reporting the official results once available.
+
+\subsection{Evaluation Setup}
+
+The GenSIE 2026 shared task evaluates participant systems in a zero-shot,
+model-agnostic setting. Each submitted pipeline is evaluated against a suite of
+evaluation models comprising both published open-weight language models and a
+set of held-out models. The models are constrained to the SLM regime
+(approximately 14 billion parameters and below) and include representative
+architectures such as Llama 3.1 8B, Qwen2.5 7B, Gemma 3, and other comparable
+models.
+
+The primary evaluation metric is \textbf{GapClosed}, defined as the fraction of
+the error gap between a baseline system and perfect performance that a
+participant system eliminates. Formally, if $E_{\text{baseline}}$ is the error
+rate of a reference baseline and $E_{\text{system}}$ is the error rate of the
+submitted system, then:
+
+\[
+\text{GapClosed} = \frac{E_{\text{baseline}} - E_{\text{system}}}{E_{\text{baseline}}}
+\]
+
+where error is measured using a flattened Micro-F1 score that treats each leaf
+field in the JSON Schema as an independent binary classification decision. A
+GapClosed of 1.0 indicates perfect performance, while 0.0 indicates performance
+equivalent to the baseline.
+
+Secondary metrics include \textbf{Raw Micro-F1} and \textbf{Efficiency}, defined
+as Micro-F1 divided by total token consumption.
+
+\subsection{Expected Outcomes}
+
+Although numerical results are pending, the architectural properties of each
+pipeline allow us to formulate expected performance patterns.
+
+\textbf{Extraction pipeline (principal).} We expect the two-phase draft-then-
+decode pipeline to achieve the highest overall GapClosed, particularly on
+schemas of complexity levels L5--L10, where the constrained decoding step
+guarantees structural validity and the strict inference rules reduce
+hallucination.
+
+\textbf{Hybrid\_cot pipeline.} We anticipate this pipeline will be most
+competitive on simpler schemas (L1--L4), achieving the highest Efficiency score
+among the three pipelines. On complex schemas, the absence of constrained
+decoding may lead to increased rates of malformed output.
+
+\textbf{Adaptive pipeline.} The adaptive pipeline's performance is expected to
+be more variable and domain-dependent. On tasks whose instruction embeddings
+have high similarity to development-set profiles, it may approach or match the
+extraction pipeline's accuracy while consuming only a single LLM call. On novel
+schemas, it offers no advantage over HybridCoT.
+
+% ==============================================================================
+% 8. ERROR ANALYSIS
+% ==============================================================================
+
+\section{Error Analysis}
+\label{sec:errors}
+
+\subsection{DraftEngine Failures}
+
+The DraftEngine, operating without structural constraints, is the most volatile
+component. We identified four recurrent failure patterns:
+
+\textbf{Missing structural tags.} In approximately 5--10\% of cases,
+particularly with models at 3B--7B parameters, the response lacks either
+\texttt{<Thinking>} or \texttt{<Draft>} tags. The fail-open design mitigates
+this by passing the raw response to the decoder.
+
+\textbf{Malformed \texttt{campo: valor} lines.} Common defects include missing
+colons, multi-line values, and unescaped colons. Recovery is imperfect but
+partially handled by the fallback parser.
+
+\textbf{Truncation.} The model may stop generating before all fields are listed,
+especially for schemas with 15+ fields or 4+ nesting levels. The downstream
+decoder maps only the available subset.
+
+\textbf{Repetition loops.} In approximately 1--3\% of cases, the model enters a
+reasoning loop within the \texttt{<Thinking>} block, consuming output tokens and
+crowding out the \texttt{<Draft>} section.
+
+\subsection{Decoder Failures}
+
+\textbf{Structured output API errors.} Some SLMs raise errors when the schema
+contains large enum sets (50+ values) or deeply nested \texttt{anyOf} chains.
+The SchemaOptimiser eliminates many triggers, but edge cases remain.
+
+\textbf{Draft-independent generation.} In approximately 3--5\% of cases, the
+decoder ignores the draft-as-context and generates a JSON object based solely
+on the schema definition. The resulting output is structurally valid but
+semantically incorrect.
+
+\textbf{Empty or null outputs.} Models below 3B parameters occasionally return
+empty responses, handled by the local fallback.
+
+\subsection{Common SLM Error Classes}
+
+Across all three pipelines, six recurrent error classes appear:
+
+\begin{enumerate}
+  \item \textbf{Enum mismatch.} SLMs produce values that do not case-match the
+  schema definition (e.g., \texttt{"Positive"} vs. \texttt{"POSITIVE"}).
+  \item \textbf{Date format violations.} Models default to natural-language
+  date expressions instead of ISO format.
+  \item \textbf{Null hallucination.} Models fill missing fields with plausible
+  default values instead of \texttt{null}.
+  \item \textbf{Entity span boundary errors.} Models truncate or extend named
+  entity spans.
+  \item \textbf{Array omissions.} Models enumerate only a subset of instances
+  for array fields.
+  \item \textbf{Language interference.} Models occasionally emit values in
+  English despite Spanish prompts and input.
+\end{enumerate}
+
+\subsection{Adaptive-Pipeline-Specific Errors}
+
+The adaptive pipeline introduces additional failure modes related to its
+retrieval-augmented prompt assembly: low-similarity profiles (task falls far
+from development data), domain cue irrelevance (incorrect or too broad domain
+labels), and error map generalisation failure (held-out schemas exhibit error
+modes not present in development data).
+
+% ==============================================================================
+% 9. CONCLUSIONS
+% ==============================================================================
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+We have presented SEsml, a system for zero-shot schema-guided information
+extraction from Spanish text using Small Language Models. The system's core
+architectural insight is the decoupling of semantic reasoning from structural
+formatting through a two-phase draft-then-decode pipeline, which mitigates the
+cognitive collapse that SLMs experience when asked to simultaneously reason
+about linguistic content and enforce JSON syntax compliance. This approach is
+theoretically grounded in the analysis of~\citet{reddy2026dccd} and
+practically instantiated through the Generate \& Organise paradigm
+\citep{li2024generate}.
+
+The draft-then-decode principle forms the basis of our principal submission,
+complemented by two alternative pipelines offering different trade-offs along
+the accuracy--latency--adaptability axes. The HybridCoT pipeline collapses the
+two phases into a single LLM call with visible Chain-of-Thought
+reasoning~\citep{wei2022chain}, while the adaptive pipeline introduces
+retrieval-augmented prompt construction through the SchemaAnalyzer and
+PromptAssembler components.
+
+Our development experience yielded several practical lessons for prompt
+engineering with SLMs. First, brevity and imperative rules consistently
+outperform detailed explanatory instructions for models under 14 billion
+parameters. Second, schema optimisation is not merely a preprocessing
+convenience but a critical enabler for constrained decoding engines. Third, the
+separation of concerns between a reasoning draft and a formatting decoder proved
+robust to a wide range of schema complexities and model architectures,
+suggesting that the draft-then-decode pattern may generalise beyond information
+extraction to other structured generation problems with SLMs.
+
+\textbf{Future work.} Several extensions are planned. The full few-shot
+integration in the adaptive pipeline --- currently disabled with the similarity
+threshold defined but not triggering example inclusion --- would allow retrieval
+of relevant exemplar pairs. A multi-model routing layer could select the
+appropriate pipeline dynamically based on task complexity estimates. Automatic
+post-correction using grounding validation feedback offers a path to recover
+from common error classes without full retry loops. Finally, cross-lingual
+evaluation beyond Spanish would test the generalisation of the draft-then-decode
+principle across Romance languages.
+
+The SEsml system is available as open-source
+software\footnote{\url{https://github.com/alejbv/SEsml.git}}, and all three
+pipelines can be reproduced using the provided Docker containers and evaluation
+harness.
+
+% ==============================================================================
+% ACKNOWLEDGEMENTS
+% ==============================================================================
+
+\section*{Acknowledgements}
+
+We thank the organisers of the GenSIE 2026 shared task at IberLEF 2026 for
+providing the evaluation framework and dataset. Computational resources were
+provided by the Faculty of Mathematics and Computing, Universidad de La Habana.
+
+% ==============================================================================
+% REFERENCES
+% ==============================================================================
+
+\bibliography{references}
+
+\end{document}

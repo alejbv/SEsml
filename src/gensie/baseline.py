@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 from typing import Any, Dict
 from openai import OpenAI
 from gensie.agent import GenSIEAgent, Participant, ParticipantInfo, PipelineInfo
@@ -11,6 +12,46 @@ from logging import getLogger
 
 load_dotenv()
 logger = getLogger("gensie")
+
+# Keys that LM Studio / constrained-decoding engines reject in JSON Schema.
+_UNSUPPORTED_SCHEMA_KEYS = frozenset({
+    "default", "title", "format",
+    "minimum", "maximum", "minLength", "maxLength",
+    "pattern",  # <-- regex patterns (esp. ?: non-capturing groups) cause 400 errors
+    "exclusiveMinimum", "exclusiveMaximum", "multipleOf",
+})
+
+
+def _strip_unsupported_schema_keys(schema: dict[str, Any]) -> dict[str, Any]:
+    """Recursively strip keys that LM Studio's json_schema engine rejects.
+
+    Operates on a **deep copy** so the original schema is never mutated.
+    """
+    result: dict[str, Any] = {}
+    for k, v in schema.items():
+        if k in _UNSUPPORTED_SCHEMA_KEYS:
+            continue
+        if k == "properties" and isinstance(v, dict):
+            # Property names are user-defined field names (e.g. "title",
+            # "default", "format") — never strip them. Recurse into values.
+            result[k] = {
+                prop_name: (
+                    _strip_unsupported_schema_keys(prop_schema)
+                    if isinstance(prop_schema, dict)
+                    else prop_schema
+                )
+                for prop_name, prop_schema in v.items()
+            }
+        elif isinstance(v, dict):
+            result[k] = _strip_unsupported_schema_keys(v)
+        elif isinstance(v, list):
+            result[k] = [
+                _strip_unsupported_schema_keys(i) if isinstance(i, dict) else i
+                for i in v
+            ]
+        else:
+            result[k] = v
+    return result
 
 
 class BasicAgent(GenSIEAgent):
@@ -37,26 +78,35 @@ class BasicAgent(GenSIEAgent):
         self.usage.reset()
         prompt = task.get_input_prompt()
 
-        # Call OpenAI with the task's JSON schema
-        response = self.client.chat.completions.create(
-            model=model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a precise data extraction agent.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            response_format={
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "extraction",
-                    "schema": task.target_schema,
-                    "strict": True,
-                },
-            },
+        # Sanitize the target schema: strip keys that LM Studio rejects
+        # (pattern with unsupported regex syntax, format, min/max, etc.)
+        sanitized_schema = _strip_unsupported_schema_keys(
+            copy.deepcopy(task.target_schema)
         )
-        self.usage.add(getattr(response, "usage", None))
+
+        # Call OpenAI with the task's JSON schema
+        try:
+            response = self.client.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a precise data extraction agent.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "extraction",
+                        "schema": sanitized_schema,
+                    },
+                },
+            )
+            self.usage.add(getattr(response, "usage", None))
+        except Exception as e:
+            logger.error("[baseline] LLM call failed: %s", e)
+            return {"error": f"LLM call failed: {str(e)}"}
 
         # Parse the structured JSON response
         try:
@@ -79,6 +129,7 @@ class OfficialParticipant(Participant):
     def __init__(self):
         # Default pipeline using the reference BasicAgent
         self.pipelines = {
+            "baseline": BasicAgent(),
             "extraction": ExtractionAgent(),
             "hybrid_cot": HybridCoTAgent(),
             "adaptive": AdaptivePipelineAgent(),
@@ -89,6 +140,16 @@ class OfficialParticipant(Participant):
             team_name="SEsml — Schema-guided Extraction with Small Language Models",
             institution="Universidad de La Habana",
             pipelines=[
+                PipelineInfo(
+                    name="baseline",
+                    description=(
+                        "BasicAgent with direct response_format=json_schema "
+                        "(OpenAI Structured Outputs). No draft-then-decode, no "
+                        "schema optimization, no CoT. Reference baseline for "
+                        "gap-closed ranking."
+                    ),
+                ),
+
                 PipelineInfo(
                     name="extraction",
                     description=(

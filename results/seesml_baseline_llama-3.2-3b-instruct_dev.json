@@ -1,0 +1,2144 @@
+{
+  "participant": {
+    "team_name": "SEsml — Schema-guided Extraction with Small Language Models",
+    "institution": "Universidad de La Habana",
+    "pipelines": [
+      {
+        "name": "baseline",
+        "description": "BasicAgent with direct response_format=json_schema (OpenAI Structured Outputs). No draft-then-decode, no schema optimization, no CoT. Reference baseline for gap-closed ranking."
+      },
+      {
+        "name": "extraction",
+        "description": "SchemaOptimizer + DraftEngine (borrador campo:valor) + Constrained Decoding (2 fases). Prompt v3b con 3 reglas críticas para SLMs. Pipeline principal para evaluación."
+      },
+      {
+        "name": "hybrid_cot",
+        "description": "SchemaOptimizer + llamada única con CoT visible (<Thinking>) + JSON directo vía _extract_json. Alternativa ligera al pipeline de 2 fases."
+      },
+      {
+        "name": "adaptive",
+        "description": "SchemaAnalyzer + PromptAssembler + llamada única. Prompt adaptativo mediante similitud semántica sobre vectores de tareas de desarrollo (data/dev_vectors.json)."
+      }
+    ]
+  },
+  "config": {
+    "model": "llama-3.2-3b-instruct",
+    "pipeline": "baseline",
+    "data_source": "/home/alejbv/Projects/research/gensie/data/dev"
+  },
+  "metrics": {
+    "precision": 0.6752352301958647,
+    "recall": 0.6231097066581184,
+    "f1": 0.6481261092789105
+  },
+  "timing": {
+    "n": 149,
+    "avg_elapsed_s": 2.99957351437596,
+    "max_elapsed_s": 42.2239440509984,
+    "over_budget_count": 0,
+    "budget_s": 60.0,
+    "avg_within_budget": true
+  },
+  "token_usage": {
+    "n": 149,
+    "total_input": 200093,
+    "total_output": 24773,
+    "total_tokens": 224866,
+    "avg_total_per_instance": 1509.1677852348994,
+    "max_total": 4271,
+    "over_target_count": 0,
+    "over_soft_count": 0,
+    "calls_total": 149,
+    "target": 32000,
+    "avg_within_target": true,
+    "source": "header"
+  },
+  "tasks": [
+    {
+      "task_id": "general_disasters_007",
+      "tps": 6.718285441084955,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 4.885275145999913,
+      "tokens": {
+        "input": 1061,
+        "output": 153,
+        "total": 1214,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_010",
+      "tps": 5.562957778577292,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.7395814529991185,
+      "tokens": {
+        "input": 1229,
+        "output": 118,
+        "total": 1347,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_10",
+      "tps": 1.9919758515043626,
+      "gold_keys": 7,
+      "system_keys": 5,
+      "elapsed_s": 8.15915881699948,
+      "tokens": {
+        "input": 1485,
+        "output": 385,
+        "total": 1870,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_legislation_002",
+      "tps": 3.9235949318453125,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 2.2839940470003057,
+      "tokens": {
+        "input": 4206,
+        "output": 65,
+        "total": 4271,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_003",
+      "tps": 2.961813455828402,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 3.891488860001118,
+      "tokens": {
+        "input": 2196,
+        "output": 150,
+        "total": 2346,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_009",
+      "tps": 4.235333914370206,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 8.264599081001506,
+      "tokens": {
+        "input": 1807,
+        "output": 275,
+        "total": 2082,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_006",
+      "tps": 5.583819215363038,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.6119828339997184,
+      "tokens": {
+        "input": 1193,
+        "output": 209,
+        "total": 1402,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_010",
+      "tps": 6.215648073752012,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.8959166200002073,
+      "tokens": {
+        "input": 1160,
+        "output": 210,
+        "total": 1370,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_02",
+      "tps": 3.5053411969417123,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 6.6270476230001805,
+      "tokens": {
+        "input": 1245,
+        "output": 319,
+        "total": 1564,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_001",
+      "tps": 3.442711306621405,
+      "gold_keys": 10,
+      "system_keys": 4,
+      "elapsed_s": 1.268337674000577,
+      "tokens": {
+        "input": 1744,
+        "output": 59,
+        "total": 1803,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_06",
+      "tps": 1.369347200032498,
+      "gold_keys": 7,
+      "system_keys": 4,
+      "elapsed_s": 2.1109146819999296,
+      "tokens": {
+        "input": 3528,
+        "output": 95,
+        "total": 3623,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_extraction_002",
+      "tps": 0.6553923257262939,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.7590752509986487,
+      "tokens": {
+        "input": 722,
+        "output": 15,
+        "total": 737,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_07",
+      "tps": 2.2679660332705214,
+      "gold_keys": 7,
+      "system_keys": 4,
+      "elapsed_s": 5.472657836999133,
+      "tokens": {
+        "input": 1631,
+        "output": 415,
+        "total": 2046,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_006",
+      "tps": 8.541834936410543,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.18660650899983,
+      "tokens": {
+        "input": 1174,
+        "output": 165,
+        "total": 1339,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_03",
+      "tps": 2.4718343624772965,
+      "gold_keys": 7,
+      "system_keys": 6,
+      "elapsed_s": 3.535892430001695,
+      "tokens": {
+        "input": 2021,
+        "output": 274,
+        "total": 2295,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_020",
+      "tps": 9.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.468572096000571,
+      "tokens": {
+        "input": 1556,
+        "output": 92,
+        "total": 1648,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_006",
+      "tps": 4.234279224072272,
+      "gold_keys": 10,
+      "system_keys": 6,
+      "elapsed_s": 2.266872907001016,
+      "tokens": {
+        "input": 1710,
+        "output": 144,
+        "total": 1854,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_drug_002",
+      "tps": 3.6983373885620225,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 19.177645566000137,
+      "tokens": {
+        "input": 1756,
+        "output": 716,
+        "total": 2472,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_007",
+      "tps": 7.404240604098929,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.565492292000272,
+      "tokens": {
+        "input": 1091,
+        "output": 139,
+        "total": 1230,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_10",
+      "tps": 3.022621541842333,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 3.7408431870007917,
+      "tokens": {
+        "input": 1397,
+        "output": 167,
+        "total": 1564,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_07",
+      "tps": 2.750223412250691,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 3.3045315930012293,
+      "tokens": {
+        "input": 2552,
+        "output": 164,
+        "total": 2716,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_010",
+      "tps": 8.198540403132196,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 5.096107650999329,
+      "tokens": {
+        "input": 1797,
+        "output": 247,
+        "total": 2044,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_007",
+      "tps": 8.465872633253525,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 4.718195401999765,
+      "tokens": {
+        "input": 1746,
+        "output": 223,
+        "total": 1969,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_008",
+      "tps": 7.537077426691846,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.1341463909993763,
+      "tokens": {
+        "input": 1078,
+        "output": 150,
+        "total": 1228,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_004",
+      "tps": 7.80310542255075,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.291499881999698,
+      "tokens": {
+        "input": 1044,
+        "output": 144,
+        "total": 1188,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_002",
+      "tps": 7.23643770424024,
+      "gold_keys": 10,
+      "system_keys": 9,
+      "elapsed_s": 2.7607834940008615,
+      "tokens": {
+        "input": 1460,
+        "output": 180,
+        "total": 1640,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_011",
+      "tps": 6.47832706001158,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.8134124719999818,
+      "tokens": {
+        "input": 1192,
+        "output": 121,
+        "total": 1313,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_002",
+      "tps": 7.548599009612429,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 4.020735141000841,
+      "tokens": {
+        "input": 1097,
+        "output": 255,
+        "total": 1352,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_008",
+      "tps": 7.524642042251025,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 5.111579999998867,
+      "tokens": {
+        "input": 1248,
+        "output": 263,
+        "total": 1511,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_contracts_005",
+      "tps": 5.499234329708997,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 1.5736489810005878,
+      "tokens": {
+        "input": 1190,
+        "output": 107,
+        "total": 1297,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_09",
+      "tps": 2.893847136226823,
+      "gold_keys": 7,
+      "system_keys": 6,
+      "elapsed_s": 2.5429837299998326,
+      "tokens": {
+        "input": 1561,
+        "output": 166,
+        "total": 1727,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_06",
+      "tps": 1.0,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.969171713999458,
+      "tokens": {
+        "input": 1083,
+        "output": 203,
+        "total": 1286,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_legislation_005",
+      "tps": 4.244639781952954,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 2.167160667000644,
+      "tokens": {
+        "input": 2918,
+        "output": 87,
+        "total": 3005,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_08",
+      "tps": 2.7612942125918405,
+      "gold_keys": 7,
+      "system_keys": 5,
+      "elapsed_s": 10.465480928000034,
+      "tokens": {
+        "input": 2104,
+        "output": 377,
+        "total": 2481,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_019",
+      "tps": 5.0,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 1.47327573199982,
+      "tokens": {
+        "input": 1555,
+        "output": 84,
+        "total": 1639,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_004",
+      "tps": 8.61809187916416,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 4.645798330999241,
+      "tokens": {
+        "input": 1205,
+        "output": 184,
+        "total": 1389,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_003",
+      "tps": 7.8800326761677235,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.5324031110012584,
+      "tokens": {
+        "input": 1315,
+        "output": 148,
+        "total": 1463,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_extraction_001",
+      "tps": 0.5674225470860996,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.48707543199998327,
+      "tokens": {
+        "input": 463,
+        "output": 10,
+        "total": 473,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_001",
+      "tps": 8.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.169608017000428,
+      "tokens": {
+        "input": 1339,
+        "output": 83,
+        "total": 1422,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_002",
+      "tps": 7.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.36686167300104,
+      "tokens": {
+        "input": 1793,
+        "output": 83,
+        "total": 1876,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_015",
+      "tps": 8.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.2818459420013824,
+      "tokens": {
+        "input": 1347,
+        "output": 99,
+        "total": 1446,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_04",
+      "tps": 4.037681894779453,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 42.2239440509984,
+      "tokens": {
+        "input": 1694,
+        "output": 626,
+        "total": 2320,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_010",
+      "tps": 6.724829031124389,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.1400037389994395,
+      "tokens": {
+        "input": 1141,
+        "output": 122,
+        "total": 1263,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_extraction_002",
+      "tps": 0.622970560221526,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.6554945879997831,
+      "tokens": {
+        "input": 317,
+        "output": 12,
+        "total": 329,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_05",
+      "tps": 1.7165955844616787,
+      "gold_keys": 7,
+      "system_keys": 6,
+      "elapsed_s": 1.9760549410002568,
+      "tokens": {
+        "input": 1507,
+        "output": 154,
+        "total": 1661,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_drug_001",
+      "tps": 3.4204837043936216,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 20.0150139769994,
+      "tokens": {
+        "input": 2010,
+        "output": 609,
+        "total": 2619,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_012",
+      "tps": 9.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.3139119090010354,
+      "tokens": {
+        "input": 1160,
+        "output": 91,
+        "total": 1251,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_013",
+      "tps": 6.9645158859690515,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.3890604940006597,
+      "tokens": {
+        "input": 976,
+        "output": 121,
+        "total": 1097,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_contracts_002",
+      "tps": 6.666666666666666,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 1.9054717310009437,
+      "tokens": {
+        "input": 1398,
+        "output": 131,
+        "total": 1529,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_009",
+      "tps": 7.425007190422549,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.0204779750001762,
+      "tokens": {
+        "input": 1181,
+        "output": 249,
+        "total": 1430,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_003",
+      "tps": 7.083319858450127,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.693730732000404,
+      "tokens": {
+        "input": 1178,
+        "output": 203,
+        "total": 1381,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_entities_002",
+      "tps": 0.4493976826454013,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 3.4482795510011783,
+      "tokens": {
+        "input": 652,
+        "output": 191,
+        "total": 843,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_011",
+      "tps": 7.752693285428048,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.3540278719992784,
+      "tokens": {
+        "input": 1501,
+        "output": 91,
+        "total": 1592,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_extraction_003",
+      "tps": 0.7546366912650933,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.5235511560003943,
+      "tokens": {
+        "input": 612,
+        "output": 16,
+        "total": 628,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_012",
+      "tps": 6.230771003771223,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 2.347658548000254,
+      "tokens": {
+        "input": 1157,
+        "output": 166,
+        "total": 1323,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_entities_001",
+      "tps": 0.8,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 1.530916489999072,
+      "tokens": {
+        "input": 549,
+        "output": 106,
+        "total": 655,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_01",
+      "tps": 1.4303481557127102,
+      "gold_keys": 7,
+      "system_keys": 4,
+      "elapsed_s": 1.9329437850010436,
+      "tokens": {
+        "input": 2457,
+        "output": 114,
+        "total": 2571,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_002",
+      "tps": 7.363635184180541,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.0903045359991665,
+      "tokens": {
+        "input": 1330,
+        "output": 156,
+        "total": 1486,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_005",
+      "tps": 5.74140166330655,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.7240541510000185,
+      "tokens": {
+        "input": 1865,
+        "output": 183,
+        "total": 2048,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_010",
+      "tps": 3.2802092241328125,
+      "gold_keys": 10,
+      "system_keys": 6,
+      "elapsed_s": 3.1760099880011694,
+      "tokens": {
+        "input": 1615,
+        "output": 207,
+        "total": 1822,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_02",
+      "tps": 3.369686475119253,
+      "gold_keys": 7,
+      "system_keys": 5,
+      "elapsed_s": 2.7305928800014954,
+      "tokens": {
+        "input": 1963,
+        "output": 148,
+        "total": 2111,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_017",
+      "tps": 9.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.4104089849988668,
+      "tokens": {
+        "input": 1451,
+        "output": 93,
+        "total": 1544,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_003",
+      "tps": 9.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.309100012998897,
+      "tokens": {
+        "input": 1647,
+        "output": 82,
+        "total": 1729,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_002",
+      "tps": 8.19705158731699,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.9047236469996278,
+      "tokens": {
+        "input": 1117,
+        "output": 148,
+        "total": 1265,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_drug_003",
+      "tps": 4.120706422048931,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 8.186627578999833,
+      "tokens": {
+        "input": 1682,
+        "output": 418,
+        "total": 2100,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_015",
+      "tps": 3.393315453062347,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 1.2500783449995652,
+      "tokens": {
+        "input": 1056,
+        "output": 89,
+        "total": 1145,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_014",
+      "tps": 4.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.4707443630013586,
+      "tokens": {
+        "input": 1728,
+        "output": 96,
+        "total": 1824,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_007",
+      "tps": 4.628091911652142,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.7872698870014574,
+      "tokens": {
+        "input": 1068,
+        "output": 174,
+        "total": 1242,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_004",
+      "tps": 7.226771607333464,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.8686051270015014,
+      "tokens": {
+        "input": 1083,
+        "output": 144,
+        "total": 1227,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_001",
+      "tps": 3.395916056917505,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.4963298969996686,
+      "tokens": {
+        "input": 820,
+        "output": 103,
+        "total": 923,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_010",
+      "tps": 4.577991280761091,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.4592024789999414,
+      "tokens": {
+        "input": 905,
+        "output": 102,
+        "total": 1007,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_008",
+      "tps": 4.633463512570913,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.5074461849999352,
+      "tokens": {
+        "input": 1177,
+        "output": 113,
+        "total": 1290,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_2",
+      "tps": 1.5983553305114384,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.7619552520009165,
+      "tokens": {
+        "input": 2534,
+        "output": 186,
+        "total": 2720,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_extraction_002",
+      "tps": 0.6780965897925523,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.6884088970000448,
+      "tokens": {
+        "input": 1002,
+        "output": 12,
+        "total": 1014,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_001",
+      "tps": 8.801937064102425,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.0616737920008745,
+      "tokens": {
+        "input": 1655,
+        "output": 211,
+        "total": 1866,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_extraction_001",
+      "tps": 0.5848150834872398,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 1.74726302199997,
+      "tokens": {
+        "input": 382,
+        "output": 149,
+        "total": 531,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_004",
+      "tps": 8.42244733991286,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.863666016000934,
+      "tokens": {
+        "input": 1725,
+        "output": 231,
+        "total": 1956,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_006",
+      "tps": 4.349536382783583,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.5442000220009504,
+      "tokens": {
+        "input": 864,
+        "output": 82,
+        "total": 946,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_legislation_004",
+      "tps": 2.9154308970079823,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 1.4330463759997656,
+      "tokens": {
+        "input": 1930,
+        "output": 74,
+        "total": 2004,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_007",
+      "tps": 6.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.4800323180006671,
+      "tokens": {
+        "input": 1541,
+        "output": 98,
+        "total": 1639,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_entities_001",
+      "tps": 0.3333333333333333,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 1.8940589769990765,
+      "tokens": {
+        "input": 675,
+        "output": 111,
+        "total": 786,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_extraction_001",
+      "tps": 0.483855282040628,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.5769809239991446,
+      "tokens": {
+        "input": 1123,
+        "output": 11,
+        "total": 1134,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_entities_002",
+      "tps": 0.33625547962516206,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 2.887750830999721,
+      "tokens": {
+        "input": 666,
+        "output": 141,
+        "total": 807,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_contracts_003",
+      "tps": 4.75,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 1.7354530280008476,
+      "tokens": {
+        "input": 1222,
+        "output": 134,
+        "total": 1356,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_005",
+      "tps": 8.778227339506092,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.8127985290011566,
+      "tokens": {
+        "input": 962,
+        "output": 149,
+        "total": 1111,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_008",
+      "tps": 8.288554092369893,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.945095721001053,
+      "tokens": {
+        "input": 1817,
+        "output": 276,
+        "total": 2093,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_005",
+      "tps": 6.5050790752114676,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.6355050309994112,
+      "tokens": {
+        "input": 1490,
+        "output": 183,
+        "total": 1673,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_002",
+      "tps": 2.9483845004611053,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.1903710899987345,
+      "tokens": {
+        "input": 746,
+        "output": 84,
+        "total": 830,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_03",
+      "tps": 1.819817118468602,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 4.061441169000318,
+      "tokens": {
+        "input": 1837,
+        "output": 206,
+        "total": 2043,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_006",
+      "tps": 5.028984603647396,
+      "gold_keys": 9,
+      "system_keys": 7,
+      "elapsed_s": 1.216164072000538,
+      "tokens": {
+        "input": 850,
+        "output": 77,
+        "total": 927,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_05",
+      "tps": 1.5921867750350038,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 5.55461692300014,
+      "tokens": {
+        "input": 1245,
+        "output": 346,
+        "total": 1591,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_010",
+      "tps": 8.548672435749936,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.542058126999109,
+      "tokens": {
+        "input": 1692,
+        "output": 100,
+        "total": 1792,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_008",
+      "tps": 6.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.5100029130007897,
+      "tokens": {
+        "input": 1477,
+        "output": 105,
+        "total": 1582,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_monuments_2",
+      "tps": 0.0,
+      "gold_keys": 6,
+      "system_keys": 1,
+      "elapsed_s": 2.41700899100033,
+      "tokens": {
+        "input": 687,
+        "output": 249,
+        "total": 936,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_legislation_001",
+      "tps": 1.623180115183641,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 1.5783436990004702,
+      "tokens": {
+        "input": 2271,
+        "output": 79,
+        "total": 2350,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_extraction_003",
+      "tps": 0.6515316891103314,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.5168250589995296,
+      "tokens": {
+        "input": 345,
+        "output": 19,
+        "total": 364,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_005",
+      "tps": 7.759341667787664,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.6722484829988389,
+      "tokens": {
+        "input": 978,
+        "output": 141,
+        "total": 1119,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_legislation_003",
+      "tps": 1.7227294633217256,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 0.9300377819999994,
+      "tokens": {
+        "input": 1097,
+        "output": 55,
+        "total": 1152,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_004",
+      "tps": 7.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.407737931000156,
+      "tokens": {
+        "input": 1831,
+        "output": 88,
+        "total": 1919,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_003",
+      "tps": 8.09429174579962,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 3.3154525459995057,
+      "tokens": {
+        "input": 937,
+        "output": 207,
+        "total": 1144,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_01",
+      "tps": 1.2990098845639813,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 3.669632458000706,
+      "tokens": {
+        "input": 1189,
+        "output": 252,
+        "total": 1441,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_09",
+      "tps": 2.581602630000553,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 3.9985315809990425,
+      "tokens": {
+        "input": 1565,
+        "output": 279,
+        "total": 1844,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_002",
+      "tps": 7.095083538668309,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.7471352749998914,
+      "tokens": {
+        "input": 1796,
+        "output": 213,
+        "total": 2009,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_013",
+      "tps": 2.7881140206456023,
+      "gold_keys": 9,
+      "system_keys": 6,
+      "elapsed_s": 1.7581019770004787,
+      "tokens": {
+        "input": 1592,
+        "output": 101,
+        "total": 1693,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_008",
+      "tps": 6.2115434507153005,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 2.4856662599995616,
+      "tokens": {
+        "input": 1483,
+        "output": 150,
+        "total": 1633,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_monuments_4",
+      "tps": 0.0,
+      "gold_keys": 6,
+      "system_keys": 1,
+      "elapsed_s": 1.2709216349994676,
+      "tokens": {
+        "input": 703,
+        "output": 124,
+        "total": 827,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_006",
+      "tps": 6.654281118055296,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.8396411020003143,
+      "tokens": {
+        "input": 1325,
+        "output": 148,
+        "total": 1473,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_001",
+      "tps": 7.243378674514098,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.670709859999988,
+      "tokens": {
+        "input": 1210,
+        "output": 215,
+        "total": 1425,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_009",
+      "tps": 9.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.3677713939996465,
+      "tokens": {
+        "input": 1483,
+        "output": 93,
+        "total": 1576,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_008",
+      "tps": 4.731554268652385,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.795128002000638,
+      "tokens": {
+        "input": 980,
+        "output": 121,
+        "total": 1101,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_008",
+      "tps": 8.029535630093438,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.0638201879992266,
+      "tokens": {
+        "input": 1139,
+        "output": 170,
+        "total": 1309,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_003",
+      "tps": 7.534033072333652,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.2382444600007148,
+      "tokens": {
+        "input": 1181,
+        "output": 165,
+        "total": 1346,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_009",
+      "tps": 8.745353147407101,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.6759556119995977,
+      "tokens": {
+        "input": 1070,
+        "output": 135,
+        "total": 1205,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_003",
+      "tps": 7.669104991915035,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.291391871000087,
+      "tokens": {
+        "input": 1021,
+        "output": 199,
+        "total": 1220,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_drug_005",
+      "tps": 2.6222508861852365,
+      "gold_keys": 6,
+      "system_keys": 5,
+      "elapsed_s": 4.109823316000984,
+      "tokens": {
+        "input": 1522,
+        "output": 364,
+        "total": 1886,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_007",
+      "tps": 7.624351988180852,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.039198738999403,
+      "tokens": {
+        "input": 1076,
+        "output": 165,
+        "total": 1241,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_monuments_1",
+      "tps": 0.0,
+      "gold_keys": 6,
+      "system_keys": 1,
+      "elapsed_s": 1.9591796320000867,
+      "tokens": {
+        "input": 682,
+        "output": 205,
+        "total": 887,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_contracts_004",
+      "tps": 5.814832595391858,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 2.165897008000684,
+      "tokens": {
+        "input": 1220,
+        "output": 159,
+        "total": 1379,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_004",
+      "tps": 4.6859180337765345,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.385896092000621,
+      "tokens": {
+        "input": 1395,
+        "output": 156,
+        "total": 1551,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_judicial_006",
+      "tps": 5.03444945061947,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.3430053440006304,
+      "tokens": {
+        "input": 1329,
+        "output": 175,
+        "total": 1504,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_010",
+      "tps": 5.840292746004545,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 2.297243590001017,
+      "tokens": {
+        "input": 1065,
+        "output": 181,
+        "total": 1246,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_009",
+      "tps": 6.655726521932042,
+      "gold_keys": 10,
+      "system_keys": 9,
+      "elapsed_s": 2.178627793000487,
+      "tokens": {
+        "input": 1212,
+        "output": 169,
+        "total": 1381,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_entities_003",
+      "tps": 0.6923076923076923,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 4.777971544999673,
+      "tokens": {
+        "input": 580,
+        "output": 227,
+        "total": 807,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_entities_001",
+      "tps": 0.530564492590276,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 3.5400239909995435,
+      "tokens": {
+        "input": 799,
+        "output": 240,
+        "total": 1039,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_08",
+      "tps": 2.0,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.183268983999369,
+      "tokens": {
+        "input": 2168,
+        "output": 170,
+        "total": 2338,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_entities_001",
+      "tps": 0.38461538461538464,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 1.4606633029998193,
+      "tokens": {
+        "input": 538,
+        "output": 78,
+        "total": 616,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_016",
+      "tps": 5.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.3503090039994277,
+      "tokens": {
+        "input": 1485,
+        "output": 96,
+        "total": 1581,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_004",
+      "tps": 3.8433899771492266,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.5650586539995857,
+      "tokens": {
+        "input": 709,
+        "output": 108,
+        "total": 817,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_entities_002",
+      "tps": 0.2727272727272727,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.8808516389999568,
+      "tokens": {
+        "input": 488,
+        "output": 54,
+        "total": 542,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_contracts_001",
+      "tps": 5.46981062520311,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.6082540759998665,
+      "tokens": {
+        "input": 1199,
+        "output": 139,
+        "total": 1338,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_009",
+      "tps": 5.235188222814934,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.7032976410009724,
+      "tokens": {
+        "input": 2559,
+        "output": 128,
+        "total": 2687,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_literature_005",
+      "tps": 4.266666666666667,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.1700695359995734,
+      "tokens": {
+        "input": 1451,
+        "output": 126,
+        "total": 1577,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_005",
+      "tps": 4.491139249908598,
+      "gold_keys": 10,
+      "system_keys": 6,
+      "elapsed_s": 1.5651405200005684,
+      "tokens": {
+        "input": 1408,
+        "output": 89,
+        "total": 1497,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_diseases_6",
+      "tps": 1.2388457056106312,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 3.43820178399983,
+      "tokens": {
+        "input": 1454,
+        "output": 261,
+        "total": 1715,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_016",
+      "tps": 6.069575438098237,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.9959441749997495,
+      "tokens": {
+        "input": 1170,
+        "output": 129,
+        "total": 1299,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_health_news_007",
+      "tps": 5.776687190670547,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.9701370559996576,
+      "tokens": {
+        "input": 1090,
+        "output": 143,
+        "total": 1233,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_014",
+      "tps": 4.008082117577483,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 2.1729805169998144,
+      "tokens": {
+        "input": 982,
+        "output": 148,
+        "total": 1130,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "lifestyle_recipes_04",
+      "tps": 1.891535338491292,
+      "gold_keys": 7,
+      "system_keys": 5,
+      "elapsed_s": 3.30852130600033,
+      "tokens": {
+        "input": 1681,
+        "output": 216,
+        "total": 1897,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_003",
+      "tps": 6.2885853591173415,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.9618290850012272,
+      "tokens": {
+        "input": 1311,
+        "output": 145,
+        "total": 1456,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_media_009",
+      "tps": 8.665241082839751,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 3.760322291000193,
+      "tokens": {
+        "input": 1781,
+        "output": 251,
+        "total": 2032,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_monuments_5",
+      "tps": 0.0,
+      "gold_keys": 6,
+      "system_keys": 1,
+      "elapsed_s": 2.178723111999716,
+      "tokens": {
+        "input": 706,
+        "output": 196,
+        "total": 902,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_software_009",
+      "tps": 6.775849904396678,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 2.1015253069999744,
+      "tokens": {
+        "input": 1373,
+        "output": 107,
+        "total": 1480,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_006",
+      "tps": 5.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.3619091870004922,
+      "tokens": {
+        "input": 1110,
+        "output": 105,
+        "total": 1215,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_005",
+      "tps": 7.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.1831162790003873,
+      "tokens": {
+        "input": 1220,
+        "output": 85,
+        "total": 1305,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_astronomy_detailed_018",
+      "tps": 5.0,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 1.3851137059991743,
+      "tokens": {
+        "input": 1748,
+        "output": 82,
+        "total": 1830,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_monuments_3",
+      "tps": 0.0,
+      "gold_keys": 6,
+      "system_keys": 1,
+      "elapsed_s": 5.686894112999653,
+      "tokens": {
+        "input": 694,
+        "output": 641,
+        "total": 1335,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_extraction_002",
+      "tps": 0.7030370696802106,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.4245144039996376,
+      "tokens": {
+        "input": 400,
+        "output": 15,
+        "total": 415,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "general_disasters_001",
+      "tps": 6.679107234308265,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.5681132230001822,
+      "tokens": {
+        "input": 1027,
+        "output": 128,
+        "total": 1155,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "environmental_ecology_001",
+      "tps": 6.663343292032406,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.6216776970013598,
+      "tokens": {
+        "input": 1147,
+        "output": 122,
+        "total": 1269,
+        "calls": 1
+      },
+      "status": "PASS"
+    }
+  ]
+}

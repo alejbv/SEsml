@@ -1,0 +1,2088 @@
+{
+  "participant": {
+    "team_name": "SEsml — Schema-guided Extraction with Small Language Models",
+    "institution": "Universidad de La Habana",
+    "pipelines": [
+      {
+        "name": "baseline",
+        "description": "BasicAgent with direct response_format=json_schema (OpenAI Structured Outputs). No draft-then-decode, no schema optimization, no CoT. Reference baseline for gap-closed ranking."
+      },
+      {
+        "name": "extraction",
+        "description": "SchemaOptimizer + DraftEngine (borrador campo:valor) + Constrained Decoding (2 fases). Prompt v3b con 3 reglas críticas para SLMs. Pipeline principal para evaluación."
+      },
+      {
+        "name": "hybrid_cot",
+        "description": "SchemaOptimizer + llamada única con CoT visible (<Thinking>) + JSON directo vía _extract_json. Alternativa ligera al pipeline de 2 fases."
+      },
+      {
+        "name": "adaptive",
+        "description": "SchemaAnalyzer + PromptAssembler + llamada única. Prompt adaptativo mediante similitud semántica sobre vectores de tareas de desarrollo (data/dev_vectors.json)."
+      }
+    ]
+  },
+  "config": {
+    "model": "google/gemma-4-e4b",
+    "pipeline": "baseline",
+    "data_source": "/home/smaug/gensie/gensie/data/test"
+  },
+  "metrics": {
+    "precision": 0.7807507309871434,
+    "recall": 0.641065855175269,
+    "f1": 0.7040466961915389
+  },
+  "timing": {
+    "n": 145,
+    "avg_elapsed_s": 4.622831730806953,
+    "max_elapsed_s": 13.787389479999547,
+    "over_budget_count": 0,
+    "budget_s": 60.0,
+    "avg_within_budget": true
+  },
+  "token_usage": {
+    "n": 145,
+    "total_input": 432121,
+    "total_output": 99873,
+    "total_tokens": 531994,
+    "avg_total_per_instance": 3668.9241379310347,
+    "max_total": 11456,
+    "over_target_count": 0,
+    "over_soft_count": 0,
+    "calls_total": 127,
+    "target": 32000,
+    "avg_within_target": true,
+    "source": "header"
+  },
+  "tasks": [
+    {
+      "task_id": "cultural_album_review_001",
+      "tps": 7.183731523908676,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 7.235686744999839,
+      "tokens": {
+        "input": 4498,
+        "output": 1129,
+        "total": 5627,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_002",
+      "tps": 6.913566498866656,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 10.194683126999735,
+      "tokens": {
+        "input": 5011,
+        "output": 1498,
+        "total": 6509,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_003",
+      "tps": 7.107793540520636,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.77792392399715,
+      "tokens": {
+        "input": 4739,
+        "output": 1012,
+        "total": 5751,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_004",
+      "tps": 6.031429401338019,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.4343189309984155,
+      "tokens": {
+        "input": 5247,
+        "output": 999,
+        "total": 6246,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_005",
+      "tps": 7.680538909282426,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.7904110419985955,
+      "tokens": {
+        "input": 4722,
+        "output": 986,
+        "total": 5708,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_006",
+      "tps": 6.918506665332207,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 8.02209173799929,
+      "tokens": {
+        "input": 5410,
+        "output": 1116,
+        "total": 6526,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_007",
+      "tps": 7.132125909724737,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 4.806111219000741,
+      "tokens": {
+        "input": 4958,
+        "output": 712,
+        "total": 5670,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_008",
+      "tps": 7.089958652540146,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 9.871636094998394,
+      "tokens": {
+        "input": 5450,
+        "output": 1402,
+        "total": 6852,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_009",
+      "tps": 6.611078190149249,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 7.666357081998285,
+      "tokens": {
+        "input": 4979,
+        "output": 1139,
+        "total": 6118,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_album_review_010",
+      "tps": 7.249768929577377,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 5.29690536400085,
+      "tokens": {
+        "input": 4936,
+        "output": 822,
+        "total": 5758,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_entities_001",
+      "tps": 0.7941028381598436,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.9134443229995668,
+      "tokens": {
+        "input": 549,
+        "output": 115,
+        "total": 664,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_extraction_001",
+      "tps": 1.0,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.20189661499898648,
+      "tokens": {
+        "input": 998,
+        "output": 13,
+        "total": 1011,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_extraction_002",
+      "tps": 1.0,
+      "gold_keys": 1,
+      "system_keys": 1,
+      "elapsed_s": 0.19024930000159657,
+      "tokens": {
+        "input": 648,
+        "output": 17,
+        "total": 665,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_literature_001",
+      "tps": 3.703932478575038,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 0.9456419439993624,
+      "tokens": {
+        "input": 969,
+        "output": 122,
+        "total": 1091,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_literature_002",
+      "tps": 4.42141618109436,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 0.8002543340007833,
+      "tokens": {
+        "input": 751,
+        "output": 114,
+        "total": 865,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_literature_003",
+      "tps": 3.774983995823047,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 0.8257295510011318,
+      "tokens": {
+        "input": 802,
+        "output": 114,
+        "total": 916,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_literature_004",
+      "tps": 3.8167170739488707,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 0.9984034680019249,
+      "tokens": {
+        "input": 1023,
+        "output": 128,
+        "total": 1151,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_literature_005",
+      "tps": 6.0,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 0.47203964900108986,
+      "tokens": {
+        "input": 563,
+        "output": 71,
+        "total": 634,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_media_001",
+      "tps": 7.4017112429324525,
+      "gold_keys": 10,
+      "system_keys": 9,
+      "elapsed_s": 1.7442742509992968,
+      "tokens": {
+        "input": 1738,
+        "output": 270,
+        "total": 2008,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_media_002",
+      "tps": 8.403396818400376,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.3024109639991366,
+      "tokens": {
+        "input": 1716,
+        "output": 187,
+        "total": 1903,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_media_003",
+      "tps": 8.468000782858809,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 2.162074997999298,
+      "tokens": {
+        "input": 1750,
+        "output": 342,
+        "total": 2092,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_monuments_002",
+      "tps": 0.0,
+      "gold_keys": 6,
+      "system_keys": 1,
+      "elapsed_s": 5.393584912002552,
+      "tokens": {
+        "input": 786,
+        "output": 1060,
+        "total": 1846,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_monuments_003",
+      "tps": 0.0,
+      "gold_keys": 6,
+      "system_keys": 1,
+      "elapsed_s": 4.491969452999911,
+      "tokens": {
+        "input": 764,
+        "output": 885,
+        "total": 1649,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_people_001",
+      "tps": 8.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.7917288550015655,
+      "tokens": {
+        "input": 1940,
+        "output": 120,
+        "total": 2060,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_people_002",
+      "tps": 8.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.8861087939985737,
+      "tokens": {
+        "input": 1722,
+        "output": 129,
+        "total": 1851,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_people_003",
+      "tps": 7.306795368835664,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.193507818999933,
+      "tokens": {
+        "input": 1892,
+        "output": 166,
+        "total": 2058,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_people_004",
+      "tps": 8.86609516070018,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.9235562620015116,
+      "tokens": {
+        "input": 2222,
+        "output": 132,
+        "total": 2354,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_cultural_people_005",
+      "tps": 8.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.0714058830017166,
+      "tokens": {
+        "input": 1874,
+        "output": 138,
+        "total": 2012,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_001",
+      "tps": 6.909090909090909,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 6.563954478002415,
+      "tokens": {
+        "input": 2816,
+        "output": 820,
+        "total": 3636,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_002",
+      "tps": 6.609303600573575,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 6.572661497997615,
+      "tokens": {
+        "input": 2789,
+        "output": 864,
+        "total": 3653,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_003",
+      "tps": 6.670796626551544,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 4.44854860399937,
+      "tokens": {
+        "input": 3634,
+        "output": 640,
+        "total": 4274,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_004",
+      "tps": 5.80746201998414,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 5.679708581999876,
+      "tokens": {
+        "input": 3052,
+        "output": 734,
+        "total": 3786,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_005",
+      "tps": 6.880986242848766,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 4.887182089001726,
+      "tokens": {
+        "input": 2887,
+        "output": 687,
+        "total": 3574,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_006",
+      "tps": 6.709758172857119,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 5.951791144998424,
+      "tokens": {
+        "input": 2772,
+        "output": 823,
+        "total": 3595,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_007",
+      "tps": 7.0,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 4.261211976001505,
+      "tokens": {
+        "input": 2526,
+        "output": 610,
+        "total": 3136,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_008",
+      "tps": 6.477418468039346,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 7.002598582999781,
+      "tokens": {
+        "input": 3300,
+        "output": 947,
+        "total": 4247,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_009",
+      "tps": 6.320541262298356,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 8.184001597001043,
+      "tokens": {
+        "input": 3032,
+        "output": 1050,
+        "total": 4082,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "cultural_theater_010",
+      "tps": 7.0,
+      "gold_keys": 11,
+      "system_keys": 7,
+      "elapsed_s": 4.90195001399843,
+      "tokens": {
+        "input": 3705,
+        "output": 689,
+        "total": 4394,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_environmental_assessments_001",
+      "tps": 6.149567323773502,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 2.1897201080028026,
+      "tokens": {
+        "input": 5021,
+        "output": 260,
+        "total": 5281,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_environmental_assessments_002",
+      "tps": 5.2638717627921645,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 3.3307334539967997,
+      "tokens": {
+        "input": 4374,
+        "output": 336,
+        "total": 4710,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_environmental_assessments_003",
+      "tps": 6.451696590749332,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 5.673775465998915,
+      "tokens": {
+        "input": 10887,
+        "output": 569,
+        "total": 11456,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_environmental_assessments_004",
+      "tps": 5.2592165354084965,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.234066668999731,
+      "tokens": {
+        "input": 5475,
+        "output": 608,
+        "total": 6083,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_environmental_assessments_005",
+      "tps": 6.0307079873010805,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 5.971602879999409,
+      "tokens": {
+        "input": 7314,
+        "output": 698,
+        "total": 8012,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_environmental_assessments_006",
+      "tps": 5.8442507116500675,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 3.5811485089980124,
+      "tokens": {
+        "input": 4036,
+        "output": 355,
+        "total": 4391,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_environmental_assessments_007",
+      "tps": 6.007721632502036,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.040929909002443,
+      "tokens": {
+        "input": 4350,
+        "output": 618,
+        "total": 4968,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_general_disasters_001",
+      "tps": 7.540704167232355,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.5901649099978385,
+      "tokens": {
+        "input": 1353,
+        "output": 247,
+        "total": 1600,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_general_disasters_002",
+      "tps": 6.004904466775137,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.365573143997608,
+      "tokens": {
+        "input": 1237,
+        "output": 236,
+        "total": 1473,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_general_disasters_003",
+      "tps": 7.802967331534681,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.247111851000227,
+      "tokens": {
+        "input": 1331,
+        "output": 213,
+        "total": 1544,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_general_disasters_004",
+      "tps": 8.41255545440199,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.3000199259986402,
+      "tokens": {
+        "input": 1248,
+        "output": 203,
+        "total": 1451,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_general_disasters_005",
+      "tps": 7.348773974071724,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.094027229999483,
+      "tokens": {
+        "input": 1115,
+        "output": 185,
+        "total": 1300,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_general_disasters_006",
+      "tps": 5.8006454662233615,
+      "gold_keys": 10,
+      "system_keys": 6,
+      "elapsed_s": 1.0316694650027785,
+      "tokens": {
+        "input": 988,
+        "output": 129,
+        "total": 1117,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_general_disasters_007",
+      "tps": 8.802781733864188,
+      "gold_keys": 10,
+      "system_keys": 10,
+      "elapsed_s": 1.0233651669987012,
+      "tokens": {
+        "input": 1126,
+        "output": 172,
+        "total": 1298,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_001",
+      "tps": 4.351681416051389,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 13.36330081199776,
+      "tokens": {
+        "input": 4677,
+        "output": 1646,
+        "total": 6323,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_002",
+      "tps": 4.105308450813889,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 13.740831849001552,
+      "tokens": {
+        "input": 5326,
+        "output": 1722,
+        "total": 7048,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_003",
+      "tps": 4.270019510447197,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 7.421566785000323,
+      "tokens": {
+        "input": 4155,
+        "output": 1123,
+        "total": 5278,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_004",
+      "tps": 4.342731328104505,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 11.302131467000436,
+      "tokens": {
+        "input": 3898,
+        "output": 1363,
+        "total": 5261,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_005",
+      "tps": 4.486028031159597,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 6.621756666001602,
+      "tokens": {
+        "input": 4093,
+        "output": 1028,
+        "total": 5121,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_006",
+      "tps": 4.548585062566772,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 9.038414454000304,
+      "tokens": {
+        "input": 4010,
+        "output": 1397,
+        "total": 5407,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_007",
+      "tps": 4.5750457615345885,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 10.565329501001543,
+      "tokens": {
+        "input": 4510,
+        "output": 1513,
+        "total": 6023,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_008",
+      "tps": 4.435580469375381,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 13.787389479999547,
+      "tokens": {
+        "input": 4766,
+        "output": 1625,
+        "total": 6391,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_009",
+      "tps": 4.001558640157868,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 10.395395613999426,
+      "tokens": {
+        "input": 4176,
+        "output": 1427,
+        "total": 5603,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "legal_case_timeline_010",
+      "tps": 4.427400104962336,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 12.060129762998258,
+      "tokens": {
+        "input": 4395,
+        "output": 1428,
+        "total": 5823,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_contracts_003",
+      "tps": 6.51373645994228,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.1789189030023408,
+      "tokens": {
+        "input": 1206,
+        "output": 182,
+        "total": 1388,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_contracts_005",
+      "tps": 7.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.0036967380001443,
+      "tokens": {
+        "input": 1223,
+        "output": 179,
+        "total": 1402,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_contracts_008",
+      "tps": 7.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.9892147480022686,
+      "tokens": {
+        "input": 1239,
+        "output": 175,
+        "total": 1414,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_judicial_002",
+      "tps": 2.730032047394198,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 1.0809128430009878,
+      "tokens": {
+        "input": 1155,
+        "output": 153,
+        "total": 1308,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_judicial_003",
+      "tps": 4.0,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 0.4681495850018109,
+      "tokens": {
+        "input": 1359,
+        "output": 54,
+        "total": 1413,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_judicial_004",
+      "tps": 2.4411575528974616,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 1.2429220470003202,
+      "tokens": {
+        "input": 1169,
+        "output": 190,
+        "total": 1359,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_legislation_001",
+      "tps": 4.0,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 0.9958585080021294,
+      "tokens": {
+        "input": 973,
+        "output": 164,
+        "total": 1137,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_legislation_002",
+      "tps": 4.038668566343952,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 1.4726890899983118,
+      "tokens": {
+        "input": 967,
+        "output": 240,
+        "total": 1207,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_legislation_003",
+      "tps": 3.387862792870029,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 1.4550775280004018,
+      "tokens": {
+        "input": 919,
+        "output": 247,
+        "total": 1166,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_legislation_004",
+      "tps": 4.087893286334632,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 1.2588221260011778,
+      "tokens": {
+        "input": 717,
+        "output": 204,
+        "total": 921,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_legislation_005",
+      "tps": 4.037202353458347,
+      "gold_keys": 5,
+      "system_keys": 5,
+      "elapsed_s": 2.052430307998293,
+      "tokens": {
+        "input": 825,
+        "output": 365,
+        "total": 1190,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_legal_legislation_006",
+      "tps": 3.4559950298673026,
+      "gold_keys": 5,
+      "system_keys": 4,
+      "elapsed_s": 0.930451970998547,
+      "tokens": {
+        "input": 694,
+        "output": 152,
+        "total": 846,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_001",
+      "tps": 7.172439990770689,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.132884031001595,
+      "tokens": {
+        "input": 4235,
+        "output": 924,
+        "total": 5159,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_002",
+      "tps": 6.511230531457946,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 7.035760934999416,
+      "tokens": {
+        "input": 3359,
+        "output": 1124,
+        "total": 4483,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_003",
+      "tps": 6.295345668739537,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.0924708810016455,
+      "tokens": {
+        "input": 3456,
+        "output": 1020,
+        "total": 4476,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_004",
+      "tps": 5.750322444406005,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 9.288208293000935,
+      "tokens": {
+        "input": 3640,
+        "output": 1425,
+        "total": 5065,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_005",
+      "tps": 5.182743498235095,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 5.608023216998845,
+      "tokens": {
+        "input": 3392,
+        "output": 958,
+        "total": 4350,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_006",
+      "tps": 7.068570540031956,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.448865148002369,
+      "tokens": {
+        "input": 3427,
+        "output": 1087,
+        "total": 4514,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_007",
+      "tps": 6.620247395596427,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 5.185616586997639,
+      "tokens": {
+        "input": 3355,
+        "output": 896,
+        "total": 4251,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_008",
+      "tps": 6.125981646044096,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 7.605364492999797,
+      "tokens": {
+        "input": 3394,
+        "output": 1210,
+        "total": 4604,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_009",
+      "tps": 5.991031695518052,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 5.569501625002886,
+      "tokens": {
+        "input": 3452,
+        "output": 915,
+        "total": 4367,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "medical_discharge_010",
+      "tps": 6.788616428039324,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 7.459183554001356,
+      "tokens": {
+        "input": 4257,
+        "output": 1242,
+        "total": 5499,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_diseases_001",
+      "tps": 2.4768032205921697,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.3305039259976184,
+      "tokens": {
+        "input": 1337,
+        "output": 324,
+        "total": 1661,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_diseases_002",
+      "tps": 1.9030544583865892,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 2.468409069999325,
+      "tokens": {
+        "input": 3340,
+        "output": 370,
+        "total": 3710,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_diseases_003",
+      "tps": 3.4641387683328526,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 3.583186730000307,
+      "tokens": {
+        "input": 1331,
+        "output": 543,
+        "total": 1874,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_diseases_004",
+      "tps": 2.8837810447516183,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 3.4811043279987643,
+      "tokens": {
+        "input": 1875,
+        "output": 495,
+        "total": 2370,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_diseases_005",
+      "tps": 3.3908154727052318,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.725091362000967,
+      "tokens": {
+        "input": 1318,
+        "output": 278,
+        "total": 1596,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_diseases_006",
+      "tps": 1.5776007858197811,
+      "gold_keys": 6,
+      "system_keys": 6,
+      "elapsed_s": 1.3366671399999177,
+      "tokens": {
+        "input": 1373,
+        "output": 222,
+        "total": 1595,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_001",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.0337586010027735,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_002",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.016447406997031067,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_003",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.01615091499843402,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_004",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.015276508001988987,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_005",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.015819509000721155,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_006",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.016514270999323344,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_007",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.015321502000006149,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_medical_trials_008",
+      "tps": 0.0,
+      "gold_keys": 10,
+      "system_keys": 1,
+      "elapsed_s": 0.015753837000374915,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_001",
+      "tps": 5.724859372232465,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 8.804415386999608,
+      "tokens": {
+        "input": 7201,
+        "output": 1462,
+        "total": 8663,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_002",
+      "tps": 4.132891237163673,
+      "gold_keys": 8,
+      "system_keys": 6,
+      "elapsed_s": 7.391969856998912,
+      "tokens": {
+        "input": 6893,
+        "output": 1200,
+        "total": 8093,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_003",
+      "tps": 4.748442531200854,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.0307030839976505,
+      "tokens": {
+        "input": 6064,
+        "output": 960,
+        "total": 7024,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_004",
+      "tps": 5.246475585643471,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 8.554056847999163,
+      "tokens": {
+        "input": 4893,
+        "output": 1465,
+        "total": 6358,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_005",
+      "tps": 5.6910555136057095,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 7.28365767500145,
+      "tokens": {
+        "input": 5329,
+        "output": 1187,
+        "total": 6516,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_006",
+      "tps": 6.0400403826525135,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 10.219673057999898,
+      "tokens": {
+        "input": 6880,
+        "output": 1704,
+        "total": 8584,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_007",
+      "tps": 5.095210491552602,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 9.854606387998501,
+      "tokens": {
+        "input": 7220,
+        "output": 1620,
+        "total": 8840,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_008",
+      "tps": 4.639234167024337,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 10.01246447000085,
+      "tokens": {
+        "input": 7471,
+        "output": 1613,
+        "total": 9084,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_009",
+      "tps": 4.81117580711116,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 6.463151333999122,
+      "tokens": {
+        "input": 7767,
+        "output": 1018,
+        "total": 8785,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "research_paper_argument_010",
+      "tps": 4.918464952099717,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 11.078657710997504,
+      "tokens": {
+        "input": 7184,
+        "output": 1864,
+        "total": 9048,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_astronomy_002",
+      "tps": 8.847644845091502,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.876762444000633,
+      "tokens": {
+        "input": 1271,
+        "output": 128,
+        "total": 1399,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_astronomy_003",
+      "tps": 7.342202025819521,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.618531880001683,
+      "tokens": {
+        "input": 978,
+        "output": 92,
+        "total": 1070,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_astronomy_detailed_003",
+      "tps": 9.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.6968031870019331,
+      "tokens": {
+        "input": 1600,
+        "output": 106,
+        "total": 1706,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_astronomy_detailed_004",
+      "tps": 9.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.76791366299949,
+      "tokens": {
+        "input": 1308,
+        "output": 121,
+        "total": 1429,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_astronomy_detailed_005",
+      "tps": 8.0,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 0.6950962619994243,
+      "tokens": {
+        "input": 996,
+        "output": 110,
+        "total": 1106,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_001",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.015562489999865647,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_002",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.015069012999447295,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_003",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.01467543100079638,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_004",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.015402963999804342,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_005",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.014120247000391828,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_006",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.014813637997576734,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_007",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.013511264998669503,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_008",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.012080903998139547,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_009",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.013457834997097962,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_stem_biology_010",
+      "tps": 0.0,
+      "gold_keys": 8,
+      "system_keys": 1,
+      "elapsed_s": 0.012383987002976937,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0,
+        "calls": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_001",
+      "tps": 8.328827707998247,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 8.483640162001393,
+      "tokens": {
+        "input": 3401,
+        "output": 1371,
+        "total": 4772,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_002",
+      "tps": 8.227972028042359,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 7.498968506002711,
+      "tokens": {
+        "input": 3242,
+        "output": 1221,
+        "total": 4463,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_003",
+      "tps": 8.109521942183472,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 4.7622905780008296,
+      "tokens": {
+        "input": 3682,
+        "output": 810,
+        "total": 4492,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_004",
+      "tps": 8.137667034669208,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 10.076561829999264,
+      "tokens": {
+        "input": 3633,
+        "output": 1528,
+        "total": 5161,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_005",
+      "tps": 8.230930412500232,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 8.861821107999276,
+      "tokens": {
+        "input": 3529,
+        "output": 1398,
+        "total": 4927,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_006",
+      "tps": 8.057179151641249,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 6.144544311999198,
+      "tokens": {
+        "input": 3689,
+        "output": 1035,
+        "total": 4724,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_007",
+      "tps": 7.8283769227771325,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 6.301129706000211,
+      "tokens": {
+        "input": 3578,
+        "output": 995,
+        "total": 4573,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_008",
+      "tps": 7.517049459080384,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 10.353857941001479,
+      "tokens": {
+        "input": 3838,
+        "output": 1622,
+        "total": 5460,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_009",
+      "tps": 7.899700467558007,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 9.45984564900209,
+      "tokens": {
+        "input": 4208,
+        "output": 1489,
+        "total": 5697,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "stem_observations_010",
+      "tps": 6.83097141439997,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 5.599712226001429,
+      "tokens": {
+        "input": 3917,
+        "output": 900,
+        "total": 4817,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_001",
+      "tps": 5.88980573412767,
+      "gold_keys": 8,
+      "system_keys": 7,
+      "elapsed_s": 12.464603873999295,
+      "tokens": {
+        "input": 6063,
+        "output": 1883,
+        "total": 7946,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_002",
+      "tps": 6.222860656134948,
+      "gold_keys": 8,
+      "system_keys": 7,
+      "elapsed_s": 8.275901476998115,
+      "tokens": {
+        "input": 5381,
+        "output": 1264,
+        "total": 6645,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_003",
+      "tps": 7.742348295104512,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 8.317596944001707,
+      "tokens": {
+        "input": 5997,
+        "output": 1379,
+        "total": 7376,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_004",
+      "tps": 5.8738594782726645,
+      "gold_keys": 8,
+      "system_keys": 7,
+      "elapsed_s": 9.770899900002405,
+      "tokens": {
+        "input": 6563,
+        "output": 1509,
+        "total": 8072,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_005",
+      "tps": 6.548785467654825,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 8.986451948003378,
+      "tokens": {
+        "input": 6553,
+        "output": 1468,
+        "total": 8021,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_006",
+      "tps": 6.309016743591141,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 9.961585780998576,
+      "tokens": {
+        "input": 5942,
+        "output": 1550,
+        "total": 7492,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_007",
+      "tps": 6.050992847208167,
+      "gold_keys": 8,
+      "system_keys": 7,
+      "elapsed_s": 11.3792266859964,
+      "tokens": {
+        "input": 6609,
+        "output": 1793,
+        "total": 8402,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_008",
+      "tps": 6.28201954833582,
+      "gold_keys": 8,
+      "system_keys": 8,
+      "elapsed_s": 12.159085365001374,
+      "tokens": {
+        "input": 6445,
+        "output": 1874,
+        "total": 8319,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_009",
+      "tps": 5.936655845349159,
+      "gold_keys": 8,
+      "system_keys": 7,
+      "elapsed_s": 7.128570431003027,
+      "tokens": {
+        "input": 6808,
+        "output": 1086,
+        "total": 7894,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "technical_security_incident_010",
+      "tps": 5.472060209011209,
+      "gold_keys": 8,
+      "system_keys": 7,
+      "elapsed_s": 9.650786837999476,
+      "tokens": {
+        "input": 6211,
+        "output": 1459,
+        "total": 7670,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_technical_software_001",
+      "tps": 7.928360058370397,
+      "gold_keys": 9,
+      "system_keys": 9,
+      "elapsed_s": 1.4985693029993854,
+      "tokens": {
+        "input": 2357,
+        "output": 197,
+        "total": 2554,
+        "calls": 1
+      },
+      "status": "PASS"
+    },
+    {
+      "task_id": "test_technical_software_002",
+      "tps": 5.629953045776183,
+      "gold_keys": 9,
+      "system_keys": 8,
+      "elapsed_s": 1.2322108280022803,
+      "tokens": {
+        "input": 1402,
+        "output": 151,
+        "total": 1553,
+        "calls": 1
+      },
+      "status": "PASS"
+    }
+  ]
+}
