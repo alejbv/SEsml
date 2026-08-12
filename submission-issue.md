@@ -1,11 +1,3 @@
----
-name: Competition Submission
-about: Use this template to submit your system for GenSIE 2026.
-title: "[SUBMISSION] SEsml — Schema-guided Extraction with Small Language Models"
-labels: submission
-assignees: apiad
----
-
 ## 🏆 Submission Details
 
 - **Official Team Name:** SEsml — Schema-guided Extraction with Small Language Models
@@ -14,41 +6,37 @@ assignees: apiad
 
 ## 👥 Participants
 
-Please list all members of the team and their respective institutions.
-
 | Name | Institution |
 | :--- | :--- |
 | Alejandro Beltrán | Facultad de Matemática y Computación, Universidad de La Habana |
-| Daniel Toledo | Facultad de Matemática y Computación, Universidad de La Habana |
 
 ## 🚀 System Overview
 
-Our approach is based on a **two-phase draft-then-decode** pipeline designed specifically for Small Language Models (<14B parameters). Instead of forcing the SLM to produce structured JSON directly — which causes timeout issues and trajectory bias under constrained decoding — we split the task:
+We submit three pipelines for evaluation, all sharing a **SchemaOptimizer** that flattens `$ref`, enforces `additionalProperties: false`, marks all fields `required`, strips `default`, and normalizes schemas for constrained decoding engines.
 
-1. **Phase 1 — DraftEngine (`draft.py`):** The SLM generates a semi-structured draft in a freeform `campo: valor` (field: value) format, wrapped in `<Thinking>…</Thinking><Draft>…</Draft>` tags. This allows the model to reason and extract without the overhead of JSON grammar constraints.
-
-2. **Phase 2 — Constrained Decoding (`decoder.py`):** A second call to the SLM maps the draft values into the exact target JSON schema using `response_format=json_schema`. A local fallback parses `campo: valor` lines directly if structured output fails.
-
-3. **Schema Optimization (`optimizer.py`):** A preprocessing step flattens `$ref`, removes `default`, enforces `additionalProperties: false`, and marks all fields `required` to minimize decoder state explosions.
-
-The core innovation is the **prompt reduction and refinement** applied iteratively to fit within SLM context windows while maximizing extraction accuracy:
-
-- **v3b prompt** (~1,163 chars / ~387 tok) with 3 explicit critical rules targeting the most frequent error patterns observed across 149 dev tasks:
-  - *[1] VALORES EXACTOS* — Forces literal text copying, exact enum matching, and strict null semantics (no inference of optional fields like `severity_level`, `unit`).
-  - *[2] INFERENCIA CONDICIONAL* — Reads the schema field `description` to determine whether inference is required (e.g., `dietary_tags`) or forbidden.
-  - *[3] ARRAYS* — Short labels (1-4 words) for features/pros/cons, exhaustive scanning for long lists, and order preservation for sequences.
-
-All previous prompt versions are preserved as comments in source for reproducibility.
+All pipelines use a compact **v3b prompt** (~1,163 chars / ~387 tok) refined through iterative ablation across 149 dev tasks, with three critical rules targeting the most frequent error patterns:
+- **[1] VALORES EXACTOS** — literal copying, exact enum matching, strict null semantics
+- **[2] INFERENCIA CONDICIONAL** — schema field descriptions determine when inference is allowed
+- **[3] ARRAYS** — short labels (1-4 words), exhaustive scanning, order preservation
 
 ### Pipelines
 
-We submit **three pipelines** for evaluation:
+1. **extraction** (Principal): SchemaOptimizer → DraftEngine (unconstrained `campo: valor` draft) → Constrained Decoder (`json_schema`). Two-phase draft-then-decode architecture that decouples semantic reasoning from structural enforcement, mitigating the *constraint tax* on SLMs.
 
-1. **extraction:** SchemaOptimizer + DraftEngine (borrador `campo: valor`) + Constrained Decoding (2 fases). Prompt v3b con 3 reglas críticas para SLMs. **Pipeline principal para evaluación.**
+2. **hybrid_cot**: SchemaOptimizer → single call with visible CoT (`<Thinking>…</Thinking>`) + `_extract_json`. Lighter alternative that skips the second decoding call at the cost of precision on complex schemas.
 
-2. **hybrid_cot:** SchemaOptimizer + llamada única con CoT visible (`<Thinking>`) + JSON directo vía `_extract_json`. Alternativa ligera al pipeline de 2 fases que elimina la llamada de constrained decoding a costa de precisión en esquemas complejos.
+3. **adaptive**: SchemaAnalyzer → PromptAssembler → single call. Prompt assembled per task via semantic similarity over dev task vectors (`data/dev_vectors.json`), adapting modules by complexity, field types, domain, and known error patterns.
 
-3. **adaptive:** SchemaAnalyzer + PromptAssembler + llamada única. Prompt adaptativo mediante similitud semántica sobre vectores de tareas de desarrollo (`data/dev_vectors.json`). El prompt se ensambla módulo por módulo según la complejidad, tipos de campo, dominio y patrones de error conocidos.
+Detailed system description available in our working notes paper: `paper/gensie2026-sesml.pdf`
+
+---
+
+## ✅ Bookkeeping
+
+- **✅ Paper sent** — the final camera-ready version ([paper/gensie2026-sesml.pdf](https://github.com/alejbv/SEsml/blob/main/paper/gensie2026-sesml.pdf)), following CEUR author instructions.
+- **✅ Signed CEUR agreement sent** — as a PDF scan ([paper/ceur_signed.pdf](https://github.com/alejbv/SEsml/blob/main/paper/ceur_signed.pdf)).
+- **🎟️ Attendance:** No — I do not plan to attend the event in person.
+- **🔎 Paper reviewed:** Yes — I have checked the overview and my team/results are represented correctly.
 
 ---
 
